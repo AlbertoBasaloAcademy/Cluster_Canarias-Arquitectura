@@ -1,0 +1,284 @@
+# E2E tests for Booking endpoints (VS Code REST Client)
+
+###############################################################################
+# HAPPY PATH - Successful Bookings
+###############################################################################
+
+### Create a new booking (valid payload)
+# Expected: 201 Created
+# Console: [PAYMENT GATEWAY] Processing payment... Transaction ID: TXN-XXXXXXXX
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "John Doe"
+}
+
+### Create another booking for the same flight
+# Expected: 201 Created
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Jane Smith"
+}
+
+### Create third booking (testing state transition to CONFIRMED at 5 bookings)
+# Expected: 201 Created
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Alice Johnson"
+}
+
+### Create fourth booking
+# Expected: 201 Created
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Bob Brown"
+}
+
+### Create fifth booking (should trigger SCHEDULED -> CONFIRMED transition)
+# Expected: 201 Created, flight status should change to CONFIRMED
+# Console: [NOTIFICATION SERVICE] Flight {id} CONFIRMED - Notifying 5 passenger(s)
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Charlie Davis"
+}
+
+###############################################################################
+# ADMIN ENDPOINT - Flight Cancellation
+###############################################################################
+
+### Trigger flight cancellation check
+# Expected: 200 OK with count of cancelled flights
+# Console: [CANCELLATION SERVICE] Cancelling flight... [PAYMENT GATEWAY] Processing refund...
+# Note: Only cancels SCHEDULED flights departing within 7 days with < 5 passengers
+POST http://localhost:8080/admin/cancel-flights
+Content-Type: application/json
+
+###############################################################################
+# PAYMENT FAILURE TEST
+###############################################################################
+
+### Create a flight with very high price to test payment failure
+# First create a flight with basePrice > 10000
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2026-06-01T10:00:00",
+  "basePrice": 15000.0
+}
+
+### Now try to book it (should fail with 402 Payment Required)
+# Expected: 402 Payment Required
+# Console: [PAYMENT GATEWAY] Payment FAILED - Amount exceeds limit
+# Note: Replace {flightId} with the ID from the previous response
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "{flightId}",
+  "passengerName": "Rich Passenger"
+}
+
+###############################################################################
+# QUERY TESTS - Filtering Bookings
+###############################################################################
+
+### Get all bookings (no filter)
+# Expected: 200 OK
+# Note: Response now includes paymentTransactionId field
+GET http://localhost:8080/bookings
+Accept: application/json
+
+### Get bookings filtered by flightId
+# Expected: 200 OK, list of bookings for f1
+GET http://localhost:8080/bookings?flightId=10000000-0000-0000-0000-000000000001
+Accept: application/json
+
+### Get bookings filtered by passengerName
+# Expected: 200 OK, list with one booking
+GET http://localhost:8080/bookings?passengerName=Jane%20Smith
+Accept: application/json
+
+### Get bookings filtered by both flightId and passengerName
+# Expected: 200 OK, list with one booking matching both criteria
+GET http://localhost:8080/bookings?flightId=10000000-0000-0000-0000-000000000001&passengerName=Jane%20Smith
+Accept: application/json
+
+### Get bookings for non-existent flight
+# Expected: 200 OK, empty list
+GET http://localhost:8080/bookings?flightId=non-existent
+Accept: application/json
+
+### Get bookings for non-existent passenger
+# Expected: 200 OK, empty list
+GET http://localhost:8080/bookings?passengerName=Ghost%20Passenger
+Accept: application/json
+
+###############################################################################
+# VALIDATION ERRORS - Missing/Invalid Fields
+###############################################################################
+
+### Create a booking with missing flightId
+# Expected: 400 Bad Request
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Missing Flight"
+}
+
+### Create a booking with invalid flightId (non-existent)
+# Expected: 404 Not Found - "Flight not found"
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "invalid-flight-id",
+  "passengerName": "Invalid Flight"
+}
+
+### Create a booking with missing passengerName
+# Expected: 400 Bad Request
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001"
+}
+
+### Create a booking with empty passengerName
+# Expected: 400 Bad Request
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": ""
+}
+
+###############################################################################
+# BUSINESS RULE TESTS - Capacity and State
+###############################################################################
+
+### Create bookings to fill remaining capacity (6-10)
+# Note: Default rocket "r1" has capacity 10, we already have 5 bookings
+# Expected: 201 Created for each
+
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 6"
+}
+
+###
+
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 7"
+}
+
+###
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 8"
+}
+
+###
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 9"
+}
+
+###
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 10"
+}
+
+### Create 11th booking (should trigger CONFIRMED -> SOLD_OUT transition)
+# Expected: 201 Created, flight status should change to SOLD_OUT
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000001",
+  "passengerName": "Passenger 11"
+}
+
+### Get all flights
+GET http://localhost:8080/flights
+Accept: application/json
+
+
+### Booking with >6 months advance (10% discount)
+# Expected: 201 Created, finalPrice = basePrice * 0.9
+# Note: Requires a flight with departureDate > 180 days from now
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000002",
+  "passengerName": "Early Bird"
+}
+
+### Booking between 1 month and 1 week before departure (20% discount)
+# Expected: 201 Created, finalPrice = basePrice * 0.8
+# Note: Requires a flight with departureDate between 7-30 days from now
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000002",
+  "passengerName": "Last Minute"
+}
+
+### Booking when only 1 seat remains (no discount)
+# Expected: 201 Created, finalPrice = basePrice (no discount)
+# Note: Requires a flight with 9 existing bookings (capacity 10)
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000002",
+  "passengerName": "Last Seat"
+}
+
+### Booking when 1 seat left to reach minPassengers (30% discount)
+# Expected: 201 Created, finalPrice = basePrice * 0.7
+# Note: Requires a flight with exactly 4 bookings (minPassengers = 5)
+POST http://localhost:8080/bookings
+Content-Type: application/json
+
+{
+  "flightId": "10000000-0000-0000-0000-000000000002",
+  "passengerName": "Confirming Passenger"
+}

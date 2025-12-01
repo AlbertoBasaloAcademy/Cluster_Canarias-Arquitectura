@@ -1,0 +1,206 @@
+# E2E tests for Flight endpoints (VS Code REST Client)
+
+###############################################################################
+# QUERY TESTS - Listing Flights
+###############################################################################
+
+### Get all flights (no filter)
+# Expected: 200 OK, list of future flights only
+GET http://localhost:8080/flights
+Accept: application/json
+
+### Get flights filtered by status SCHEDULED
+# Expected: 200 OK, list of SCHEDULED flights
+GET http://localhost:8080/flights?status=SCHEDULED
+Accept: application/json
+
+### Get flights filtered by status CONFIRMED
+# Expected: 200 OK, list of CONFIRMED flights
+GET http://localhost:8080/flights?status=CONFIRMED
+Accept: application/json
+
+### Get flights filtered by status SOLD_OUT
+# Expected: 200 OK, list of SOLD_OUT flights (may be empty)
+GET http://localhost:8080/flights?status=SOLD_OUT
+Accept: application/json
+
+### Get flights filtered by status CANCELLED
+# Expected: 200 OK, list of CANCELLED flights (may be empty)
+GET http://localhost:8080/flights?status=CANCELLED
+Accept: application/json
+
+### Get flights with invalid status filter
+# Expected: 200 OK, empty list (invalid status is ignored)
+GET http://localhost:8080/flights?status=INVALID_STATUS
+Accept: application/json
+
+###############################################################################
+# HAPPY PATH - Successful Flight Creation
+###############################################################################
+
+### Create a new flight (valid payload, 1 month ahead)
+# Expected: 201 Created
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2025-12-25T10:00:00",
+  "basePrice": 1500.0
+}
+
+### Create a flight 6 months ahead (for discount testing)
+# Expected: 201 Created
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2026-06-01T14:00:00",
+  "basePrice": 2000.0
+}
+
+### Create a flight 2 weeks ahead (for last-minute discount testing)
+# Expected: 201 Created
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2025-12-10T09:00:00",
+  "basePrice": 1800.0
+}
+
+### Create a flight at maximum allowed date (1 year ahead)
+# Expected: 201 Created
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2026-11-25T12:00:00",
+  "basePrice": 2500.0
+}
+
+###############################################################################
+# VALIDATION ERRORS - Missing Fields
+###############################################################################
+
+### Create a flight with missing rocketId
+# Expected: 400 Bad Request
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "departureDate": "2025-12-01T10:00:00",
+  "basePrice": 1500.0
+}
+
+### Create a flight with missing departureDate
+# Expected: 400 Bad Request
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "basePrice": 1500.0
+}
+
+### Create a flight with missing basePrice
+# Expected: 400 Bad Request
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2025-12-01T10:00:00"
+}
+
+###############################################################################
+# VALIDATION ERRORS - Invalid rocketId
+###############################################################################
+
+### Create a flight with invalid rocketId (non-existent)
+# Expected: 404 Not Found - "Rocket with id ... does not exist"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "invalid-rocket-id",
+  "departureDate": "2025-12-01T10:00:00",
+  "basePrice": 1500.0
+}
+
+### Create a flight with empty rocketId
+# Expected: 400 Bad Request
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "",
+  "departureDate": "2025-12-01T10:00:00",
+  "basePrice": 1500.0
+}
+
+###############################################################################
+# VALIDATION ERRORS - Invalid departureDate
+###############################################################################
+
+### Create a flight with invalid date format
+# Expected: 400 Bad Request - "Invalid departure date format"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "invalid-date",
+  "basePrice": 1500.0
+}
+
+### Create a flight with departureDate in the past
+# Expected: 400 Bad Request - "Departure date must be in the future"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2020-01-01T10:00:00",
+  "basePrice": 1500.0
+}
+
+### Create a flight with departureDate more than 1 year ahead
+# Expected: 400 Bad Request - "Departure date cannot be more than 1 year ahead"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2027-12-01T10:00:00",
+  "basePrice": 1500.0
+}
+
+###############################################################################
+# VALIDATION ERRORS - Invalid basePrice
+###############################################################################
+
+### Create a flight with negative basePrice
+# Expected: 400 Bad Request - "Base price must be positive"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2025-12-01T10:00:00",
+  "basePrice": -100.0
+}
+
+### Create a flight with zero basePrice
+# Expected: 400 Bad Request - "Base price must be positive"
+POST http://localhost:8080/flights
+Content-Type: application/json
+
+{
+  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "departureDate": "2025-12-01T10:00:00",
+  "basePrice": 0.0
+}

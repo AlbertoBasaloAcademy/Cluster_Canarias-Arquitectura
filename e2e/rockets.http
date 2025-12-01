@@ -1,0 +1,171 @@
+# E2E tests for Rocket endpoints (VS Code REST Client)
+
+###############################################################################
+# QUERY TESTS - Listing Rockets
+###############################################################################
+
+### Get all rockets (should have one pre-loaded rocket)
+# Expected: 200 OK, list with at least one rocket (r1: Falcon 9)
+GET http://localhost:8080/rockets
+Accept: application/json
+
+###############################################################################
+# HAPPY PATH - Successful Rocket Creation
+###############################################################################
+
+### Create a new rocket (valid payload)
+# Expected: 201 Created
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Starship",
+  "capacity": 5,
+  "speed": 30000.0
+}
+
+### Create another rocket with maximum capacity
+# Expected: 201 Created
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Dragon",
+  "capacity": 10,
+  "speed": 28000.0
+}
+
+### Create a rocket with minimum capacity
+# Expected: 201 Created
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Crew Dragon",
+  "capacity": 1,
+  "speed": 27000.0
+}
+
+### Get all rockets after creation (should contain newly created rockets)
+# Expected: 200 OK, list with multiple rockets
+GET http://localhost:8080/rockets
+Accept: application/json
+
+###############################################################################
+# VALIDATION ERRORS - Missing Fields
+###############################################################################
+
+### Create a rocket with missing name
+# Expected: 400 Bad Request - "Rocket name must be provided"
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "capacity": 3,
+  "speed": 25000.0
+}
+
+### Create a rocket with missing capacity
+# Expected: 400 Bad Request 
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Incomplete Rocket",
+  "speed": 25000.0
+}
+
+###############################################################################
+# VALIDATION ERRORS - Invalid Field Values
+###############################################################################
+
+### Create a rocket with empty name
+# Expected: 400 Bad Request - "Rocket name must be provided"
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "",
+  "capacity": 5,
+  "speed": 25000.0
+}
+
+### Create a rocket with whitespace-only name
+# Expected: 400 Bad Request - "Rocket name must be provided"
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "capacity": 5,
+  "speed": 25000.0
+}
+
+### Create a rocket with capacity exceeding maximum (>10)
+# Expected: 400 Bad Request - "Rocket capacity cannot exceed 10"
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Oversized Rocket",
+  "capacity": 11,
+  "speed": 25000.0
+}
+
+### Create a rocket with capacity of 15 (well over limit)
+# Expected: 400 Bad Request - "Rocket capacity cannot exceed 10"
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Giant Rocket",
+  "capacity": 15,
+  "speed": 25000.0
+}
+
+### Create a rocket with negative capacity
+# Expected: 400 Bad Request (capacity validation)
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Negative Rocket",
+  "capacity": -5,
+  "speed": 25000.0
+}
+
+### Create a rocket with zero capacity
+# Expected: 400 Bad Request (capacity should be positive)
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Zero Capacity Rocket",
+  "capacity": 0,
+  "speed": 25000.0
+}
+
+###############################################################################
+# EDGE CASES
+###############################################################################
+
+### Create a rocket without speed field (speed is optional/cosmetic)
+# Expected: 201 Created (speed field is not validated)
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "No Speed Rocket",
+  "capacity": 7
+}
+
+### Create a rocket with negative speed (should be accepted as speed is cosmetic)
+# Expected: 201 Created (speed field has no business validation)
+POST http://localhost:8080/rockets
+Content-Type: application/json
+
+{
+  "name": "Negative Speed Rocket",
+  "capacity": 3,
+  "speed": -1000.0
+}
