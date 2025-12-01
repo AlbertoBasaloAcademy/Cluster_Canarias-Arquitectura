@@ -3,9 +3,9 @@ package com.astrobookings.business;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.astrobookings.business.exception.NotFoundException;
-import com.astrobookings.business.exception.ValidationException;
 import com.astrobookings.business.models.CreateFlightCommand;
+import com.astrobookings.business.models.NotFoundException;
+import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Flight;

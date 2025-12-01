@@ -1,4 +1,4 @@
-package com.astrobookings.business.exception;
+package com.astrobookings.business.models;
 
 public class CapacityException extends BusinessException {
   public CapacityException(String message) {

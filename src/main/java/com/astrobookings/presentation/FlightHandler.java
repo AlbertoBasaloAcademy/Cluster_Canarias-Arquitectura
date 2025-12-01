@@ -7,8 +7,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
-import com.astrobookings.business.exception.ValidationException;
 import com.astrobookings.business.models.CreateFlightCommand;
+import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.models.Flight;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;

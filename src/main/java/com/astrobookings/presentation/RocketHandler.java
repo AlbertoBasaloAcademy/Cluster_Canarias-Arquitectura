@@ -3,8 +3,8 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.RocketService;
-import com.astrobookings.business.exception.ValidationException;
 import com.astrobookings.business.models.CreateRocketCommand;
+import com.astrobookings.business.models.ValidationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 

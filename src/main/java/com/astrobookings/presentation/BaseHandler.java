@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.astrobookings.presentation.ErrorResponseMapper.ErrorPayload;
+import com.astrobookings.presentation.models.ErrorResponse;
+import com.astrobookings.presentation.models.ErrorResponseMapper;
+import com.astrobookings.presentation.models.ErrorResponseMapper.ErrorPayload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

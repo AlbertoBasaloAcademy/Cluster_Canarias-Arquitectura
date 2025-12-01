@@ -1,4 +1,4 @@
-package com.astrobookings.business.exception;
+package com.astrobookings.business.models;
 
 public class PaymentException extends BusinessException {
   public PaymentException(String message) {

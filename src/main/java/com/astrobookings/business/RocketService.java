@@ -2,8 +2,8 @@ package com.astrobookings.business;
 
 import java.util.List;
 
-import com.astrobookings.business.exception.ValidationException;
 import com.astrobookings.business.models.CreateRocketCommand;
+import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Rocket;
 

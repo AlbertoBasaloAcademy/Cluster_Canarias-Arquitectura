@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.astrobookings.business.exception.CapacityException;
-import com.astrobookings.business.exception.NotFoundException;
-import com.astrobookings.business.exception.PaymentException;
-import com.astrobookings.business.exception.ValidationException;
+import com.astrobookings.business.models.CapacityException;
 import com.astrobookings.business.models.CreateBookingCommand;
+import com.astrobookings.business.models.NotFoundException;
+import com.astrobookings.business.models.PaymentException;
+import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.BookingRepository;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
