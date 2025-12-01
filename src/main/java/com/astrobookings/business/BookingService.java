@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import com.astrobookings.business.exception.CapacityException;
+import com.astrobookings.business.exception.NotFoundException;
+import com.astrobookings.business.exception.PaymentException;
+import com.astrobookings.business.exception.ValidationException;
+import com.astrobookings.business.models.CreateBookingCommand;
 import com.astrobookings.persistence.BookingRepository;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
@@ -11,13 +16,15 @@ import com.astrobookings.persistence.models.Booking;
 import com.astrobookings.persistence.models.Flight;
 import com.astrobookings.persistence.models.FlightStatus;
 import com.astrobookings.persistence.models.Rocket;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BookingService {
   private final BookingRepository bookingRepository;
   private final FlightRepository flightRepository;
   private final RocketRepository rocketRepository;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+
+  public BookingService() {
+    this(new BookingRepository(), new FlightRepository(), new RocketRepository());
+  }
 
   public BookingService(BookingRepository bookingRepository, FlightRepository flightRepository,
       RocketRepository rocketRepository) {
@@ -26,76 +33,61 @@ public class BookingService {
     this.rocketRepository = rocketRepository;
   }
 
-  public String createBooking(String flightId, String passengerName) throws Exception {
-    // Validate input
-    if (flightId == null || flightId.trim().isEmpty()) {
-      throw new IllegalArgumentException("Flight ID must be provided");
+  public Booking createBooking(CreateBookingCommand command) {
+    if (command.flightId() == null || command.flightId().isBlank()) {
+      throw new ValidationException("Flight ID must be provided");
     }
-    if (passengerName == null || passengerName.trim().isEmpty()) {
-      throw new IllegalArgumentException("Passenger name must be provided");
+    if (command.passengerName() == null || command.passengerName().isBlank()) {
+      throw new ValidationException("Passenger name must be provided");
     }
 
-    // Find flight
-    Flight flight = flightRepository.findAll().stream()
-        .filter(f -> f.getId().equals(flightId))
-        .findFirst()
-        .orElse(null);
+    Flight flight = flightRepository.findById(command.flightId());
     if (flight == null) {
-      throw new IllegalArgumentException("Flight not found");
+      throw new NotFoundException("Flight not found");
     }
-
-    // Check flight status
     if (flight.getStatus() == FlightStatus.CANCELLED || flight.getStatus() == FlightStatus.SOLD_OUT) {
-      throw new IllegalArgumentException("Flight is not available for booking");
+      throw new ValidationException("Flight is not available for booking");
     }
 
-    // Get rocket capacity
-    Rocket rocket = rocketRepository.findAll().stream()
-        .filter(r -> r.getId().equals(flight.getRocketId()))
-        .findFirst()
-        .orElse(null);
+    Rocket rocket = rocketRepository.findById(flight.getRocketId());
     if (rocket == null) {
-      throw new IllegalArgumentException("Rocket not found");
+      throw new NotFoundException("Rocket not found");
     }
+
+    List<Booking> existingBookings = bookingRepository.findByFlightId(command.flightId());
     int capacity = rocket.getCapacity();
-
-    // Count current bookings
-    List<Booking> existingBookings = bookingRepository.findByFlightId(flightId);
     int currentBookings = existingBookings.size();
-
     if (currentBookings >= capacity) {
-      throw new IllegalArgumentException("Flight is sold out");
+      throw new CapacityException("Flight is sold out");
     }
 
-    // Calculate discount
     double discount = calculateDiscount(flight, currentBookings, capacity);
-
-    // Final price
     double finalPrice = flight.getBasePrice() * (1 - discount);
 
-    // Process payment
-    String transactionId = PaymentGateway.processPayment(finalPrice);
+    String transactionId;
+    try {
+      transactionId = PaymentGateway.processPayment(finalPrice);
+    } catch (Exception e) {
+      throw new PaymentException(e.getMessage());
+    }
 
-    // Create booking
     Booking booking = new Booking();
-    booking.setFlightId(flightId);
-    booking.setPassengerName(passengerName);
+    booking.setFlightId(command.flightId());
+    booking.setPassengerName(command.passengerName());
     booking.setFinalPrice(finalPrice);
     booking.setPaymentTransactionId(transactionId);
     Booking savedBooking = bookingRepository.save(booking);
 
-    // Update flight status
     currentBookings++;
     if (currentBookings >= capacity) {
       flight.setStatus(FlightStatus.SOLD_OUT);
     } else if (currentBookings >= flight.getMinPassengers() && flight.getStatus() == FlightStatus.SCHEDULED) {
       flight.setStatus(FlightStatus.CONFIRMED);
-      NotificationService.notifyConfirmation(flightId, currentBookings);
+      NotificationService.notifyConfirmation(command.flightId(), currentBookings);
     }
     flightRepository.save(flight);
 
-    // Return JSON (mixing responsibility)
-    return objectMapper.writeValueAsString(savedBooking);
+    return savedBooking;
   }
 
   private double calculateDiscount(Flight flight, int currentBookings, int capacity) {
@@ -116,7 +108,7 @@ public class BookingService {
     }
   }
 
-  public String getBookings(String flightId, String passengerName) throws Exception {
+  public List<Booking> getBookings(String flightId, String passengerName) {
     List<Booking> bookings;
     if (flightId != null && !flightId.isEmpty()) {
       bookings = bookingRepository.findByFlightId(flightId);
@@ -130,6 +122,6 @@ public class BookingService {
     } else {
       bookings = bookingRepository.findAll();
     }
-    return objectMapper.writeValueAsString(bookings);
+    return bookings;
   }
 }

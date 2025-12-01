@@ -1,28 +1,17 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.astrobookings.business.BookingService;
-import com.astrobookings.persistence.BookingRepository;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RocketRepository;
+import com.astrobookings.business.exception.ValidationException;
+import com.astrobookings.business.models.CreateBookingCommand;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class BookingHandler extends BaseHandler {
-  private final BookingService bookingService;
-
-  public BookingHandler() {
-    BookingRepository bookingRepository = new BookingRepository();
-    FlightRepository flightRepository = new FlightRepository();
-    RocketRepository rocketRepository = new RocketRepository();
-    this.bookingService = new BookingService(bookingRepository, flightRepository, rocketRepository);
-  }
+  private final BookingService bookingService = new BookingService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -38,9 +27,6 @@ public class BookingHandler extends BaseHandler {
   }
 
   private void handleGet(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 200;
-
     try {
       URI uri = exchange.getRequestURI();
       String query = uri.getQuery();
@@ -52,72 +38,39 @@ public class BookingHandler extends BaseHandler {
         passengerName = params.get("passengerName");
       }
 
-      response = bookingService.getBookings(flightId, passengerName);
+      var bookings = bookingService.getBookings(flightId, passengerName);
+      String response = this.objectMapper.writeValueAsString(bookings);
+      sendResponse(exchange, 200, response);
     } catch (Exception e) {
-      statusCode = 500;
-      response = "{\"error\": \"Internal server error\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
   private void handlePost(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 201;
-
     try {
-      // Parse JSON body
-      InputStream is = exchange.getRequestBody();
-      String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+      String body = readRequestBody(exchange);
       JsonNode jsonNode = this.objectMapper.readTree(body);
+      CreateBookingCommand command = mapCreateBooking(jsonNode);
 
-      String flightId = jsonNode.get("flightId").asText();
-      String passengerName = jsonNode.get("passengerName").asText();
-
-      // Basic validation in handler (mixing)
-      if (flightId == null || flightId.trim().isEmpty()) {
-        statusCode = 400;
-        response = "{\"error\": \"Flight ID must be provided\"}";
-      } else if (passengerName == null || passengerName.trim().isEmpty()) {
-        statusCode = 400;
-        response = "{\"error\": \"Passenger name must be provided\"}";
-      } else {
-        response = bookingService.createBooking(flightId, passengerName);
-      }
-    } catch (IllegalArgumentException e) {
-      String error = e.getMessage();
-      if (error.contains("not found")) {
-        statusCode = 404;
-      } else if (error.contains("not available")) {
-        statusCode = 400;
-      } else {
-        statusCode = 400;
-      }
-      response = "{\"error\": \"" + error + "\"}";
+      var booking = bookingService.createBooking(command);
+      String response = this.objectMapper.writeValueAsString(booking);
+      sendResponse(exchange, 201, response);
     } catch (Exception e) {
-      if (e.getMessage() != null && e.getMessage().contains("FAILED")) {
-        statusCode = 402;
-        response = "{\"error\": \"Payment required\"}";
-      } else {
-        statusCode = 400;
-        response = "{\"error\": \"Invalid JSON or request\"}";
-      }
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
-  protected Map<String, String> parseQuery(String query) {
-    Map<String, String> params = new HashMap<>();
-    if (query != null) {
-      String[] pairs = query.split("&");
-      for (String pair : pairs) {
-        String[] keyValue = pair.split("=");
-        if (keyValue.length == 2) {
-          params.put(keyValue[0], keyValue[1]);
-        }
-      }
+  private CreateBookingCommand mapCreateBooking(JsonNode node) {
+    String flightId = requireText(node, "flightId");
+    String passengerName = requireText(node, "passengerName");
+    return new CreateBookingCommand(flightId, passengerName);
+  }
+
+  private String requireText(JsonNode node, String fieldName) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull() || value.asText().isBlank()) {
+      throw new ValidationException("Field '" + fieldName + "' is required");
     }
-    return params;
+    return value.asText();
   }
 }

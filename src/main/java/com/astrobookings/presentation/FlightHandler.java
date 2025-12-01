@@ -1,26 +1,20 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RocketRepository;
+import com.astrobookings.business.exception.ValidationException;
+import com.astrobookings.business.models.CreateFlightCommand;
 import com.astrobookings.persistence.models.Flight;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class FlightHandler extends BaseHandler {
-  private final FlightService flightService;
-
-  public FlightHandler() {
-    FlightRepository flightRepository = new FlightRepository();
-    RocketRepository rocketRepository = new RocketRepository();
-    this.flightService = new FlightService(flightRepository, rocketRepository);
-  }
+  private final FlightService flightService = new FlightService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -36,9 +30,6 @@ public class FlightHandler extends BaseHandler {
   }
 
   private void handleGet(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 200;
-
     try {
       URI uri = exchange.getRequestURI();
       String query = uri.getQuery();
@@ -47,55 +38,64 @@ public class FlightHandler extends BaseHandler {
         Map<String, String> params = this.parseQuery(query);
         statusFilter = params.get("status");
       }
-
-      response = this.objectMapper.writeValueAsString(flightService.getFlights(statusFilter));
+      String response = this.objectMapper.writeValueAsString(flightService.getFlights(statusFilter));
+      sendResponse(exchange, 200, response);
     } catch (Exception e) {
-      statusCode = 500;
-      response = "{\"error\": \"Internal server error\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
   private void handlePost(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 201;
-
     try {
-      // Parse JSON body
-      InputStream is = exchange.getRequestBody();
-      String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-      Flight flight = this.objectMapper.readValue(body, Flight.class);
+      String body = readRequestBody(exchange);
+      JsonNode jsonNode = this.objectMapper.readTree(body);
+      CreateFlightCommand command = mapCreateFlight(jsonNode);
 
-      Flight saved = flightService.createFlight(flight);
-      response = this.objectMapper.writeValueAsString(saved);
-    } catch (IllegalArgumentException e) {
-      String error = e.getMessage();
-      if (error.contains("does not exist")) {
-        statusCode = 404;
-      } else {
-        statusCode = 400;
-      }
-      response = "{\"error\": \"" + error + "\"}";
+      Flight saved = flightService.createFlight(command);
+      String response = this.objectMapper.writeValueAsString(saved);
+      sendResponse(exchange, 201, response);
     } catch (Exception e) {
-      statusCode = 400;
-      response = "{\"error\": \"Invalid JSON or request\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
-  protected Map<String, String> parseQuery(String query) {
-    Map<String, String> params = new HashMap<>();
-    if (query != null) {
-      String[] pairs = query.split("&");
-      for (String pair : pairs) {
-        String[] keyValue = pair.split("=");
-        if (keyValue.length == 2) {
-          params.put(keyValue[0], keyValue[1]);
-        }
+  private CreateFlightCommand mapCreateFlight(JsonNode node) {
+    String rocketId = requireText(node, "rocketId");
+    LocalDateTime departureDate = parseDate(requireText(node, "departureDate"));
+    double basePrice = requireDouble(node, "basePrice");
+    Integer minPassengers = null;
+    if (node.has("minPassengers") && !node.get("minPassengers").isNull()) {
+      JsonNode minNode = node.get("minPassengers");
+      if (!minNode.canConvertToInt()) {
+        throw new ValidationException("Field 'minPassengers' must be an integer");
       }
+      minPassengers = minNode.asInt();
     }
-    return params;
+    return new CreateFlightCommand(rocketId, departureDate, basePrice, minPassengers);
   }
+
+  private String requireText(JsonNode node, String fieldName) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull() || value.asText().isBlank()) {
+      throw new ValidationException("Field '" + fieldName + "' is required");
+    }
+    return value.asText();
+  }
+
+  private double requireDouble(JsonNode node, String fieldName) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull() || !value.isNumber()) {
+      throw new ValidationException("Field '" + fieldName + "' must be numeric");
+    }
+    return value.asDouble();
+  }
+
+  private LocalDateTime parseDate(String value) {
+    try {
+      return LocalDateTime.parse(value);
+    } catch (DateTimeParseException exception) {
+      throw new ValidationException("Field 'departureDate' must follow ISO-8601 format");
+    }
+  }
+
 }

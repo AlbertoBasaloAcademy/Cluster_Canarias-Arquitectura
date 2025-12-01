@@ -1,15 +1,15 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
-import com.astrobookings.persistence.RocketRepository;
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.business.RocketService;
+import com.astrobookings.business.exception.ValidationException;
+import com.astrobookings.business.models.CreateRocketCommand;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class RocketHandler extends BaseHandler {
-  private final RocketRepository rocketRepository = new RocketRepository();
+  private final RocketService rocketService = new RocketService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -25,56 +25,48 @@ public class RocketHandler extends BaseHandler {
   }
 
   private void handleGet(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 200;
-
     try {
-      response = this.objectMapper.writeValueAsString(rocketRepository.findAll());
+      String response = this.objectMapper.writeValueAsString(rocketService.getAll());
+      sendResponse(exchange, 200, response);
     } catch (Exception e) {
-      statusCode = 500;
-      response = "{\"error\": \"Internal server error\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
   private void handlePost(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 200;
-
     try {
-      // Parse JSON body
-      InputStream is = exchange.getRequestBody();
-      String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-      Rocket rocket = this.objectMapper.readValue(body, Rocket.class);
+      String body = readRequestBody(exchange);
+      JsonNode jsonNode = this.objectMapper.readTree(body);
+      CreateRocketCommand command = mapCreateRocket(jsonNode);
 
-      // Business validations mixed with input validation
-      String error = validateRocket(rocket);
-      if (error != null) {
-        statusCode = 400;
-        response = "{\"error\": \"" + error + "\"}";
-      } else {
-        Rocket saved = rocketRepository.save(rocket);
-        statusCode = 201;
-        response = this.objectMapper.writeValueAsString(saved);
-      }
+      var saved = rocketService.create(command);
+      String response = this.objectMapper.writeValueAsString(saved);
+      sendResponse(exchange, 201, response);
     } catch (Exception e) {
-      statusCode = 400;
-      response = "{\"error\": \"Invalid JSON or request\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 
-  private String validateRocket(Rocket rocket) {
-    if (rocket.getName() == null || rocket.getName().trim().isEmpty()) {
-      return "Rocket name must be provided";
-    }
-    if (rocket.getCapacity() <= 0 || rocket.getCapacity() > 10) {
-      return "Rocket capacity must be between 1 and 10";
-    }
-    // Speed is optional, no validation
-    return null;
+  private CreateRocketCommand mapCreateRocket(JsonNode jsonNode) {
+    String name = requireText(jsonNode, "name");
+    int capacity = requireInt(jsonNode, "capacity");
+    Double speed = jsonNode.hasNonNull("speed") ? jsonNode.get("speed").asDouble() : null;
+    return new CreateRocketCommand(name, capacity, speed);
   }
 
+  private String requireText(JsonNode node, String fieldName) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull() || value.asText().isBlank()) {
+      throw new ValidationException("Field '" + fieldName + "' is required");
+    }
+    return value.asText();
+  }
+
+  private int requireInt(JsonNode node, String fieldName) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull() || !value.canConvertToInt()) {
+      throw new ValidationException("Field '" + fieldName + "' must be an integer");
+    }
+    return value.asInt();
+  }
 }

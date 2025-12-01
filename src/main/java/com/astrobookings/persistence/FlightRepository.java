@@ -37,6 +37,10 @@ public class FlightRepository {
         .collect(Collectors.toList());
   }
 
+  public Flight findById(String id) {
+    return flights.get(id);
+  }
+
   public List<Flight> findByStatus(String status) {
     try {
       FlightStatus flightStatus = FlightStatus.valueOf(status.toUpperCase());

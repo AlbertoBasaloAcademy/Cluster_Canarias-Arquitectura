@@ -14,12 +14,16 @@ public class CancellationService {
   private final FlightRepository flightRepository;
   private final BookingRepository bookingRepository;
 
+  public CancellationService() {
+    this(new FlightRepository(), new BookingRepository());
+  }
+
   public CancellationService(FlightRepository flightRepository, BookingRepository bookingRepository) {
     this.flightRepository = flightRepository;
     this.bookingRepository = bookingRepository;
   }
 
-  public String cancelFlights() throws Exception {
+  public int cancelFlights() {
     List<Flight> flights = flightRepository.findAll();
     int cancelledCount = 0;
     LocalDateTime now = LocalDateTime.now();
@@ -48,7 +52,6 @@ public class CancellationService {
         }
       }
     }
-
-    return "{\"message\": \"Flight cancellation check completed\", \"cancelledFlights\": " + cancelledCount + "}";
+    return cancelledCount;
   }
 }

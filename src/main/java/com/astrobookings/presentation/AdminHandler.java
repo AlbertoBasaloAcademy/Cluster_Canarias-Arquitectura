@@ -3,18 +3,10 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.CancellationService;
-import com.astrobookings.persistence.BookingRepository;
-import com.astrobookings.persistence.FlightRepository;
 import com.sun.net.httpserver.HttpExchange;
 
 public class AdminHandler extends BaseHandler {
-  private final CancellationService cancellationService;
-
-  public AdminHandler() {
-    FlightRepository flightRepository = new FlightRepository();
-    BookingRepository bookingRepository = new BookingRepository();
-    this.cancellationService = new CancellationService(flightRepository, bookingRepository);
-  }
+  private final CancellationService cancellationService = new CancellationService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -28,16 +20,13 @@ public class AdminHandler extends BaseHandler {
   }
 
   private void handlePost(HttpExchange exchange) throws IOException {
-    String response = "";
-    int statusCode = 200;
-
     try {
-      response = cancellationService.cancelFlights();
+      int cancelled = cancellationService.cancelFlights();
+      String response = "{\"message\": \"Flight cancellation check completed\", \"cancelledFlights\": "
+          + cancelled + "}";
+      sendResponse(exchange, 200, response);
     } catch (Exception e) {
-      statusCode = 500;
-      response = "{\"error\": \"Internal server error\"}";
+      handleException(exchange, e);
     }
-
-    sendResponse(exchange, statusCode, response);
   }
 }

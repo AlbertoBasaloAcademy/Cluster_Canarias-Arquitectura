@@ -2,9 +2,11 @@ package com.astrobookings.presentation;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.astrobookings.presentation.ErrorResponseMapper.ErrorPayload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -25,7 +27,18 @@ public abstract class BaseHandler implements HttpHandler {
   }
 
   protected void handleMethodNotAllowed(HttpExchange exchange) throws IOException {
-    sendResponse(exchange, 405, "{\"error\": \"Method not allowed\"}");
+    String response = objectMapper.writeValueAsString(new ErrorResponse("METHOD_NOT_ALLOWED", "Method not allowed"));
+    sendResponse(exchange, 405, response);
+  }
+
+  protected void handleException(HttpExchange exchange, Exception exception) throws IOException {
+    ErrorPayload payload = ErrorResponseMapper.from(exception);
+    String response = objectMapper.writeValueAsString(payload.response());
+    sendResponse(exchange, payload.statusCode(), response);
+  }
+
+  protected String readRequestBody(HttpExchange exchange) throws IOException {
+    return new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
   }
 
   protected Map<String, String> parseQuery(String query) {
