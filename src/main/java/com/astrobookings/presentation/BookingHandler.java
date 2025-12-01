@@ -5,13 +5,14 @@ import java.net.URI;
 import java.util.Map;
 
 import com.astrobookings.business.BookingService;
+import com.astrobookings.business.ServiceFactory;
 import com.astrobookings.business.models.CreateBookingCommand;
 import com.astrobookings.business.models.ValidationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class BookingHandler extends BaseHandler {
-  private final BookingService bookingService = new BookingService();
+  private final BookingService bookingService = ServiceFactory.getBookingService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

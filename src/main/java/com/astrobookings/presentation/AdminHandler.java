@@ -3,10 +3,11 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.CancellationService;
+import com.astrobookings.business.ServiceFactory;
 import com.sun.net.httpserver.HttpExchange;
 
 public class AdminHandler extends BaseHandler {
-  private final CancellationService cancellationService = new CancellationService();
+  private final CancellationService cancellationService = ServiceFactory.getCancellationService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

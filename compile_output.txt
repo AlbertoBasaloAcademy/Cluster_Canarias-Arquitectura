@@ -1,0 +1,197 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.astrobookings:astrobookings >-------------------
+[INFO] Building astrobookings 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ astrobookings ---
+[INFO] Deleting C:\code\live\Cluster_Canarias-Arquitectura\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ astrobookings ---
+[INFO] skip non existing resourceDirectory C:\code\live\Cluster_Canarias-Arquitectura\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ astrobookings ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 42 source files with javac [debug target 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[2,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[3,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[5,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[11,7] unnamed classes are a preview feature and are disabled by default.
+  (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[13,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[14,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[16,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[7,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[8,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[10,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[12,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[18,7] unnamed classes are a preview feature and are disabled by default.
+  (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[21,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[23,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[24,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[25,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[29,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[30,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[32,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[43,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[44,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[46,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[52,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[53,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[57,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[59,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[61,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[10,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[11,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[13,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[15,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[21,7] unnamed classes are a preview feature and are disabled by default.
+  (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[23,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[25,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[26,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[28,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[29,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[31,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[42,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[43,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[45,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[53,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[55,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[57,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[59,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[61,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[65,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[67,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[69,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[73,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[75,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[77,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[82,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[84,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[5,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[6,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[8,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[10,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[16,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[17,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[19,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[25,7] unnamed classes are a preview feature and are disabled by default.
+  (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[30,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[31,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[33,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[40,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[41,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[45,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[47,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[49,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[53,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[55,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[57,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[1,1] unnamed class should not have package declaration
+[INFO] 77 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.240 s
+[INFO] Finished at: 2025-12-01T21:07:10+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project astrobookings: Compilation failure: Compilation failure: 
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[2,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[3,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[5,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[11,7] unnamed classes are a preview feature and are disabled by default.
+[ERROR]   (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[13,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[14,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[16,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/AdminHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[7,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[8,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[10,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[12,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[18,7] unnamed classes are a preview feature and are disabled by default.
+[ERROR]   (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[21,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[23,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[24,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[25,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[29,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[30,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[32,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[43,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[44,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[46,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[52,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[53,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[57,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[59,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[61,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/BookingHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[10,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[11,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[13,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[15,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[21,7] unnamed classes are a preview feature and are disabled by default.
+[ERROR]   (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[23,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[25,9] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[26,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[28,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[29,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[31,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[42,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[43,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[45,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[53,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[55,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[57,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[59,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[61,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[65,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[67,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[69,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[73,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[75,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[77,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[82,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[84,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/FlightHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[5,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[6,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[8,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[10,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[16,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[17,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[19,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[25,7] unnamed classes are a preview feature and are disabled by default.
+[ERROR]   (use --enable-preview to enable unnamed classes)
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[30,7] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[31,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[33,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[40,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[41,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[45,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[47,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[49,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[53,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[55,5] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[57,3] class, interface, enum, or record expected
+[ERROR] /C:/code/live/Cluster_Canarias-Arquitectura/src/main/java/com/astrobookings/presentation/RocketHandler.java:[1,1] unnamed class should not have package declaration
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

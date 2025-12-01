@@ -7,6 +7,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
+import com.astrobookings.business.ServiceFactory;
 import com.astrobookings.business.models.CreateFlightCommand;
 import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.models.Flight;
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class FlightHandler extends BaseHandler {
-  private final FlightService flightService = new FlightService();
+  private final FlightService flightService = ServiceFactory.getFlightService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -97,5 +98,4 @@ public class FlightHandler extends BaseHandler {
       throw new ValidationException("Field 'departureDate' must follow ISO-8601 format");
     }
   }
-
 }

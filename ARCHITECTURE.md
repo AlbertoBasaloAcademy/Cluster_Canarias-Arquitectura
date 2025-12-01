@@ -58,32 +58,48 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 └── ARCHITECTURE.md
 ```
 
-### Capas:
-- **presentation**: 
-  - HTTP handlers (RocketHandler, FlightHandler, BookingHandler, AdminHandler)
-  - HTTP response models (ErrorResponse)
-- **business**: 
-  - Logic Services (FlightService, BookingService, CancellationService) + Gateways (PaymentGateway, NotificationService)
-  - DTOs and Exceptions (CreateRocketCommand, CreateFlightCommand, CreateBookingCommand, ValidationException, NotFoundException)
-- **persistence**: 
-  - In-memory repositories(RocketRepository, FlightRepository, BookingRepository) 
-  - Data models (Rocket, Flight, Booking, FlightStatus)
+### Capas y Componentes:
 
-## Flujo de Datos
+Se ha refactorizado la aplicación para utilizar **Interfaces** y **Factorías**, desacoplando las implementaciones concretas de las capas superiores.
+
+- **presentation**: 
+  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Dependen de interfaces de servicio (`RocketService`, `FlightService`, etc.) y obtienen las instancias a través de `ServiceFactory`.
+  - **HTTP response models**: (ErrorResponse).
+
+- **business**: 
+  - **Interfaces de Servicio**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Definen los contratos de la lógica de negocio.
+  - **Implementaciones de Servicio**: (`FlightServiceImpl`, `BookingServiceImpl`, etc.). Implementan la lógica y dependen de interfaces de repositorio y gateways.
+  - **Interfaces de Infraestructura**: (`PaymentGateway`, `NotificationService`).
+  - **Implementaciones de Infraestructura**: (`PaymentGatewayImpl`, `NotificationServiceImpl`).
+  - **Factorías**:
+    - `ServiceFactory`: Provee instancias de servicios.
+    - `InfrastructureFactory`: Provee instancias de gateways/infraestructura.
+  - **DTOs y Excepciones**: (CreateRocketCommand, ValidationException, etc.).
+
+- **persistence**: 
+  - **Interfaces de Repositorio**: (`RocketRepository`, `FlightRepository`, `BookingRepository`).
+  - **Implementaciones de Repositorio**: (`RocketRepositoryImpl`, etc.). Implementaciones en memoria.
+  - **Factorías**:
+    - `RepositoryFactory`: Provee instancias de repositorios.
+  - **Data models**: (Rocket, Flight, Booking, FlightStatus).
+
+## Flujo de Datos y Dependencias
+
+El flujo de control va de arriba hacia abajo (Presentation -> Business -> Persistence), pero las dependencias de código apuntan hacia las abstracciones (Interfaces).
 
 ### Crear Reserva (POST /bookings)
 ```
 Presentation Layer
   └─ BookingHandler
-       ↓
-     Business Layer
-       └─ BookingService
-            ├─ PaymentGateway (process payment)
-            └─ NotificationService (if flight confirmed)
+       ↓ (usa ServiceFactory para obtener BookingService)
+     Business Layer (Interface: BookingService)
+       └─ BookingServiceImpl
+            ├─ PaymentGateway (Interface) -> PaymentGatewayImpl
+            └─ NotificationService (Interface) -> NotificationServiceImpl
                  ↓
-               Persistence Layer
-                 ├─ BookingRepository (save booking)
-                 └─ FlightRepository (update flight status)
+               Persistence Layer (Interface: BookingRepository, FlightRepository)
+                 ├─ BookingRepositoryImpl (save booking)
+                 └─ FlightRepositoryImpl (update flight status)
                       ↓
                     Model Layer
                       ├─ Booking (with paymentTransactionId)
@@ -94,15 +110,15 @@ Presentation Layer
 ```
 Presentation Layer
   └─ AdminHandler
-       ↓
-     Business Layer
-       └─ FlightCancellationService
-            ├─ PaymentGateway (process refunds)
-            └─ NotificationService (send cancellation emails)
+       ↓ (usa ServiceFactory para obtener CancellationService)
+     Business Layer (Interface: CancellationService)
+       └─ CancellationServiceImpl
+            ├─ PaymentGateway (Interface) -> PaymentGatewayImpl
+            └─ NotificationService (Interface) -> NotificationServiceImpl
                  ↓
-               Persistence Layer
-                 ├─ FlightRepository (find & update to CANCELLED)
-                 └─ BookingRepository (get bookings for refunds)
+               Persistence Layer (Interface: FlightRepository, BookingRepository)
+                 ├─ FlightRepositoryImpl (find & update to CANCELLED)
+                 └─ BookingRepositoryImpl (get bookings for refunds)
                       ↓
                     Model Layer
                       ├─ Flight (status: SCHEDULED → CANCELLED)
@@ -124,4 +140,3 @@ java -jar target/astrobookings-1.0-SNAPSHOT.jar
 
 # Server: http://localhost:8080
 ```
-
