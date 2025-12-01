@@ -2,67 +2,74 @@ package com.astrobookings.presentation;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Rocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class RocketHandler implements HttpHandler {
+public class RocketHandler extends BaseHandler {
   private final RocketRepository rocketRepository = new RocketRepository();
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
     String method = exchange.getRequestMethod();
+
+    if ("GET".equals(method)) {
+      handleGet(exchange);
+    } else if ("POST".equals(method)) {
+      handlePost(exchange);
+    } else {
+      handleMethodNotAllowed(exchange);
+    }
+  }
+
+  private void handleGet(HttpExchange exchange) throws IOException {
     String response = "";
     int statusCode = 200;
 
-    if ("GET".equals(method)) {
-      try {
-        response = objectMapper.writeValueAsString(rocketRepository.findAll());
-      } catch (Exception e) {
-        statusCode = 500;
-        response = "{\"error\": \"Internal server error\"}";
-      }
-    } else if ("POST".equals(method)) {
-      try {
-        // Parse JSON body
-        InputStream is = exchange.getRequestBody();
-        String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        Rocket rocket = objectMapper.readValue(body, Rocket.class);
+    try {
+      response = objectMapper.writeValueAsString(rocketRepository.findAll());
+    } catch (Exception e) {
+      statusCode = 500;
+      response = "{\"error\": \"Internal server error\"}";
+    }
 
-        // Business validations mixed with input validation
-        String error = validateRocket(rocket);
-        if (error != null) {
-          statusCode = 400;
-          response = "{\"error\": \"" + error + "\"}";
-        } else {
-          Rocket saved = rocketRepository.save(rocket);
-          statusCode = 201;
-          response = objectMapper.writeValueAsString(saved);
-        }
-      } catch (Exception e) {
+    sendResponse(exchange, statusCode, response);
+  }
+
+  private void handlePost(HttpExchange exchange) throws IOException {
+    String response = "";
+    int statusCode = 200;
+
+    try {
+      // Parse JSON body
+      InputStream is = exchange.getRequestBody();
+      String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+      Rocket rocket = objectMapper.readValue(body, Rocket.class);
+
+      // Business validations mixed with input validation
+      String error = validateRocket(rocket);
+      if (error != null) {
         statusCode = 400;
-        response = "{\"error\": \"Invalid JSON or request\"}";
+        response = "{\"error\": \"" + error + "\"}";
+      } else {
+        Rocket saved = rocketRepository.save(rocket);
+        statusCode = 201;
+        response = objectMapper.writeValueAsString(saved);
       }
-    } else {
-      statusCode = 405;
-      response = "{\"error\": \"Method not allowed\"}";
-      exchange.sendResponseHeaders(statusCode, response.getBytes().length);
-      try (OutputStream os = exchange.getResponseBody()) {
-        os.write(response.getBytes());
-      }
-      return;
+    } catch (Exception e) {
+      statusCode = 400;
+      response = "{\"error\": \"Invalid JSON or request\"}";
     }
 
-    exchange.sendResponseHeaders(statusCode, response.getBytes().length);
-    try (OutputStream os = exchange.getResponseBody()) {
-      os.write(response.getBytes());
-    }
+    sendResponse(exchange, statusCode, response);
+  }
+
+  private void handleMethodNotAllowed(HttpExchange exchange) throws IOException {
+    sendResponse(exchange, 405, "{\"error\": \"Method not allowed\"}");
   }
 
   private String validateRocket(Rocket rocket) {
