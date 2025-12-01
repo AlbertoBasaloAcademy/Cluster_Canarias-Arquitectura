@@ -48,8 +48,10 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 ```
 ├── src/main/java/com/astrobookings/
 │   ├── presentation/ # HTTP Handlers 
+│   │   └─ models/    # Http Responses
 │   ├── business/     # Services & Gateways
-│   └── persistence/     # Repositories & models
+│   │   └─ models/    # DTOs and Exceptions
+│   └── persistence/  # Repositories & models
 │       └─ models/    # Data models
 ├── pom.xml
 ├── README.md
@@ -59,10 +61,13 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 ### Capas:
 - **presentation**: 
   - HTTP handlers (RocketHandler, FlightHandler, BookingHandler, AdminHandler)
+  - HTTP response models (ErrorResponse)
 - **business**: 
   - Logic Services (FlightService, BookingService, CancellationService) + Gateways (PaymentGateway, NotificationService)
+  - DTOs and Exceptions (CreateRocketCommand, CreateFlightCommand, CreateBookingCommand, ValidationException, NotFoundException)
 - **persistence**: 
-  - In-memory repositories(RocketRepository, FlightRepository, BookingRepository) + Data models (Rocket, Flight, Booking, FlightStatus)
+  - In-memory repositories(RocketRepository, FlightRepository, BookingRepository) 
+  - Data models (Rocket, Flight, Booking, FlightStatus)
 
 ## Flujo de Datos
 
@@ -120,15 +125,3 @@ java -jar target/astrobookings-1.0-SNAPSHOT.jar
 # Server: http://localhost:8080
 ```
 
-## Refactor de responsabilidades
-
-Para corregir la mezcla de responsabilidades se definió el siguiente enfoque iterativo (sin introducir factories ni nuevas abstracciones innecesarias):
-
-- **DTOs de entrada en negocio**: se agregaron records en `src/main/java/com/astrobookings/business/models` (`CreateRocketCommand`, `CreateFlightCommand`, `CreateBookingCommand`). Se usan como contrato de entrada para los servicios, pero su validación se reparte así: la capa de presentación verifica estructura y tipos básicos antes de construir el DTO; la capa de negocio valida los valores (capacidad, fechas, disponibilidad, etc.).
-- **Servicios como únicos dueños de repos**: los handlers ya no instancian ni llaman repositorios. Cada servicio (`RocketService`, `FlightService`, `BookingService`, `CancellationService`) encapsula su acceso a `persistence` y devuelve modelos de dominio; la serialización vuelve a la capa de presentación.
-- **Excepciones de negocio**: se creó la jerarquía `business/exception` con `BusinessException` + especializaciones (`ValidationException`, `NotFoundException`, `PaymentException`, `CapacityException`). Los servicios lanzan estas excepciones cuando una regla de negocio falla.
-- **Respuestas de error unificadas**: `presentation/ErrorResponseMapper` traduce cualquier excepción de negocio en `{ "code": "...", "message": "..." }` y asigna automáticamente el HTTP status (400 validación, 404 not found, 402 pago, 409 capacidad, 500 interno). `BaseHandler` centraliza el envío de estas respuestas.
-- **Handlers más delgados**: cada handler se limita a: parsear JSON → validar estructura → construir DTO → invocar servicio → serializar respuesta. También comparten utilidades de parsing en `BaseHandler` (lectura de body, parseo de query strings y manejo de errores).
-
-Este refactor apunta a que futuras funcionalidades sigan el mismo patrón: cualquier nueva entrada debe definir su DTO en `business/models`, validar estructura en la capa de presentación, realizar validaciones de valor en el servicio correspondiente y usar la jerarquía de excepciones para mantener las respuestas homogéneas.
----
