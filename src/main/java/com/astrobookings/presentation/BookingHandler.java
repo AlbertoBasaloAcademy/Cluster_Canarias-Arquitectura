@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.astrobookings.business.BookingService;
-import com.astrobookings.persistence.BookingRepository;
+import com.astrobookings.persistence.BookingRepositoryInMemory;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +18,7 @@ public class BookingHandler extends BaseHandler {
   private final BookingService bookingService;
 
   public BookingHandler() {
-    BookingRepository bookingRepository = new BookingRepository();
+    BookingRepositoryInMemory bookingRepository = new BookingRepositoryInMemory();
     FlightRepository flightRepository = new FlightRepository();
     RocketRepository rocketRepository = new RocketRepository();
     this.bookingService = new BookingService(bookingRepository, flightRepository, rocketRepository);
@@ -70,18 +70,13 @@ public class BookingHandler extends BaseHandler {
       InputStream is = exchange.getRequestBody();
       String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
       JsonNode jsonNode = this.objectMapper.readTree(body);
-
-      String flightId = jsonNode.get("flightId").asText();
-      String passengerName = jsonNode.get("passengerName").asText();
-
-      // Basic validation in handler (mixing)
-      if (flightId == null || flightId.trim().isEmpty()) {
+      String errorMessage = validadorEntrada(jsonNode);
+      if (errorMessage != null) {
+        response = "{ \"error\": \"" + errorMessage + "\" }";
         statusCode = 400;
-        response = "{\"error\": \"Flight ID must be provided\"}";
-      } else if (passengerName == null || passengerName.trim().isEmpty()) {
-        statusCode = 400;
-        response = "{\"error\": \"Passenger name must be provided\"}";
       } else {
+        String flightId = jsonNode.get("flightId").asText();
+        String passengerName = jsonNode.get("passengerName").asText();
         response = bookingService.createBooking(flightId, passengerName);
       }
     } catch (IllegalArgumentException e) {
@@ -119,5 +114,19 @@ public class BookingHandler extends BaseHandler {
       }
     }
     return params;
+  }
+
+  private String validadorEntrada(JsonNode jsonNode) {
+    if (jsonNode == null) {
+        return "El cuerpo de la petición no puede estar vacío";
+    }
+    if (!jsonNode.has("flightId") || jsonNode.get("flightId").isNull() || jsonNode.get("flightId").asText().trim().isEmpty()) {
+        return "El parámetro 'flightId' es obligatorio";
+    }
+    if (!jsonNode.has("passengerName") || jsonNode.get("passengerName").isNull() || jsonNode.get("passengerName").asText().trim().isEmpty()) {
+        return "El parámetro 'passengerName' es obligatorio";
+    }
+    
+    return null; 
   }
 }

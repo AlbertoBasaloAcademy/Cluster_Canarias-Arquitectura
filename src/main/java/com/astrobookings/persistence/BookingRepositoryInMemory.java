@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import com.astrobookings.persistence.models.Booking;
 
-public class BookingRepository {
+public class BookingRepositoryInMemory implements BookingRepositoryPort {
   private static final Map<String, Booking> bookings = new HashMap<>();
   private static int nextId = 1;
 

@@ -3,7 +3,7 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.CancellationService;
-import com.astrobookings.persistence.BookingRepository;
+import com.astrobookings.persistence.BookingRepositoryInMemory;
 import com.astrobookings.persistence.FlightRepository;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -12,7 +12,7 @@ public class AdminHandler extends BaseHandler {
 
   public AdminHandler() {
     FlightRepository flightRepository = new FlightRepository();
-    BookingRepository bookingRepository = new BookingRepository();
+    BookingRepositoryInMemory bookingRepository = new BookingRepositoryInMemory();
     this.cancellationService = new CancellationService(flightRepository, bookingRepository);
   }
 
