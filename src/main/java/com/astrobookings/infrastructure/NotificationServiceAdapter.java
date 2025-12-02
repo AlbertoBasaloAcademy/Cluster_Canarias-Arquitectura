@@ -1,10 +1,11 @@
-package com.astrobookings.business;
+package com.astrobookings.infrastructure;
 
 import java.util.List;
 
-import com.astrobookings.persistence.models.Booking;
+import com.astrobookings.domain.models.Booking;
+import com.astrobookings.domain.NotificationService;
 
-public class NotificationService {
+public class NotificationServiceAdapter implements NotificationService {
   public void notifyConfirmation(String flightId, int passengerCount) {
     System.out.println(
         "[NOTIFICATION SERVICE] Flight " + flightId + " CONFIRMED - Notifying " + passengerCount + " passenger(s)");

@@ -1,4 +1,4 @@
-package com.astrobookings.persistence.models;
+package com.astrobookings.domain.models;
 
 public class Rocket {
   private String id;

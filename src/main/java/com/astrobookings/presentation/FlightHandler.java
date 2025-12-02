@@ -4,13 +4,20 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import com.astrobookings.business.FlightService;
-import com.astrobookings.business.models.CreateFlightCommand;
+import com.astrobookings.domain.FlightService;
+import com.astrobookings.domain.models.CreateFlightCommand;
+import com.astrobookings.infrastructure.InfrastructureFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class FlightHandler extends BaseHandler {
-  private final FlightService flightService = new FlightService();
+  private final FlightService flightService;
+
+  public FlightHandler() {
+    this.flightService = new FlightService(
+        InfrastructureFactory.getFlightRepository(),
+        InfrastructureFactory.getRocketRepository());
+  }
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

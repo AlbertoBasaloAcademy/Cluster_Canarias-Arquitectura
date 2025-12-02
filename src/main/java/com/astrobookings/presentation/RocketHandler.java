@@ -2,13 +2,18 @@ package com.astrobookings.presentation;
 
 import java.io.IOException;
 
-import com.astrobookings.business.RocketService;
-import com.astrobookings.business.models.CreateRocketCommand;
+import com.astrobookings.domain.RocketService;
+import com.astrobookings.domain.models.CreateRocketCommand;
+import com.astrobookings.infrastructure.InfrastructureFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class RocketHandler extends BaseHandler {
-  private final RocketService rocketService = new RocketService();
+  private final RocketService rocketService;
+
+  public RocketHandler() {
+    this.rocketService = new RocketService(InfrastructureFactory.getRocketRepository());
+  }
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

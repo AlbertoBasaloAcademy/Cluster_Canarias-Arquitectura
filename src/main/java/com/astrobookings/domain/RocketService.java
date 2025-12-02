@@ -1,18 +1,17 @@
-package com.astrobookings.business;
+package com.astrobookings.domain;
 
 import java.util.List;
 
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
-import com.astrobookings.business.models.CreateRocketCommand;
-import com.astrobookings.persistence.RepositoryFactory;
-import com.astrobookings.persistence.RocketRepository;
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.models.BusinessErrorCode;
+import com.astrobookings.domain.models.BusinessException;
+import com.astrobookings.domain.models.CreateRocketCommand;
+import com.astrobookings.domain.models.Rocket;
 
 public class RocketService {
-  private final RocketRepository rocketRepository = RepositoryFactory.getRocketRepository();
+  private final RocketRepository rocketRepository;
 
-  public RocketService() {
+  public RocketService(RocketRepository rocketRepository) {
+    this.rocketRepository = rocketRepository;
   }
 
   public List<Rocket> getAll() {

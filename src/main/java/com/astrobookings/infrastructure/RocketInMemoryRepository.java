@@ -1,11 +1,12 @@
-package com.astrobookings.persistence;
+package com.astrobookings.infrastructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.models.Rocket;
+import com.astrobookings.domain.RocketRepository;
 
 public class RocketInMemoryRepository implements RocketRepository {
   private static final Map<String, Rocket> rockets = new HashMap<>();

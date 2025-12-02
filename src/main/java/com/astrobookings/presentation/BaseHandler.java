@@ -8,8 +8,8 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
+import com.astrobookings.domain.models.BusinessErrorCode;
+import com.astrobookings.domain.models.BusinessException;
 import com.astrobookings.presentation.models.ErrorResponse;
 import com.astrobookings.presentation.models.ErrorResponseMapper;
 import com.astrobookings.presentation.models.ErrorResponseMapper.ErrorPayload;

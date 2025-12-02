@@ -1,7 +1,7 @@
-package com.astrobookings.persistence;
+package com.astrobookings.domain;
 
 import java.util.List;
-import com.astrobookings.persistence.models.Flight;
+import com.astrobookings.domain.models.Flight;
 
 public interface FlightRepository {
   List<Flight> findAll();

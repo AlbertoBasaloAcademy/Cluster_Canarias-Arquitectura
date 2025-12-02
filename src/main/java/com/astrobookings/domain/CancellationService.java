@@ -1,23 +1,25 @@
-package com.astrobookings.business;
+package com.astrobookings.domain;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.astrobookings.persistence.BookingRepository;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RepositoryFactory;
-import com.astrobookings.persistence.models.Booking;
-import com.astrobookings.persistence.models.Flight;
-import com.astrobookings.persistence.models.FlightStatus;
+import com.astrobookings.domain.models.Booking;
+import com.astrobookings.domain.models.Flight;
+import com.astrobookings.domain.models.FlightStatus;
 
 public class CancellationService {
-  private final FlightRepository flightRepository = RepositoryFactory.getFlightRepository();
-  private final BookingRepository bookingRepository = RepositoryFactory.getBookingRepository();
-  private final PaymentGateway paymentGateway = new PaymentGateway();
-  private final NotificationService notificationService = new NotificationService();
+  private final FlightRepository flightRepository;
+  private final BookingRepository bookingRepository;
+  private final PaymentGateway paymentGateway;
+  private final NotificationService notificationService;
 
-  public CancellationService() {
+  public CancellationService(FlightRepository flightRepository, BookingRepository bookingRepository,
+      PaymentGateway paymentGateway, NotificationService notificationService) {
+    this.flightRepository = flightRepository;
+    this.bookingRepository = bookingRepository;
+    this.paymentGateway = paymentGateway;
+    this.notificationService = notificationService;
   }
 
   public int cancelFlights() {

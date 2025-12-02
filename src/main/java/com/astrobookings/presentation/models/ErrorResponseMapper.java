@@ -1,7 +1,7 @@
 package com.astrobookings.presentation.models;
 
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
+import com.astrobookings.domain.models.BusinessErrorCode;
+import com.astrobookings.domain.models.BusinessException;
 
 public final class ErrorResponseMapper {
   private ErrorResponseMapper() {

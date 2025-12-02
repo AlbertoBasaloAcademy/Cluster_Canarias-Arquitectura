@@ -1,6 +1,8 @@
-package com.astrobookings.business;
+package com.astrobookings.infrastructure;
 
-public class PaymentGateway {
+import com.astrobookings.domain.PaymentGateway;
+
+public class PaymentGatewayAdapter implements PaymentGateway {
   public String processPayment(double amount) throws Exception {
     System.out.println("[PAYMENT GATEWAY] Processing payment... Amount: " + amount);
     if (amount > 10000) {

@@ -1,24 +1,23 @@
-package com.astrobookings.business;
+package com.astrobookings.domain;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
-import com.astrobookings.business.models.CreateFlightCommand;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RepositoryFactory;
-import com.astrobookings.persistence.RocketRepository;
-import com.astrobookings.persistence.models.Flight;
-import com.astrobookings.persistence.models.FlightStatus;
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.models.BusinessErrorCode;
+import com.astrobookings.domain.models.BusinessException;
+import com.astrobookings.domain.models.CreateFlightCommand;
+import com.astrobookings.domain.models.Flight;
+import com.astrobookings.domain.models.FlightStatus;
+import com.astrobookings.domain.models.Rocket;
 
 public class FlightService {
-  private final FlightRepository flightRepository = RepositoryFactory.getFlightRepository();
-  private final RocketRepository rocketRepository = RepositoryFactory.getRocketRepository();
+  private final FlightRepository flightRepository;
+  private final RocketRepository rocketRepository;
   private static final int DEFAULT_MIN_PASSENGERS = 5;
 
-  public FlightService() {
+  public FlightService(FlightRepository flightRepository, RocketRepository rocketRepository) {
+    this.flightRepository = flightRepository;
+    this.rocketRepository = rocketRepository;
   }
 
   public List<Flight> getFlights(String statusFilter) {

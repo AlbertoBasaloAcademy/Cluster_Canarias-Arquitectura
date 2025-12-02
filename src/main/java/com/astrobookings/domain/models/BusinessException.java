@@ -1,4 +1,4 @@
-package com.astrobookings.business.models;
+package com.astrobookings.domain.models;
 
 public class BusinessException extends RuntimeException {
   private final BusinessErrorCode errorCode;
