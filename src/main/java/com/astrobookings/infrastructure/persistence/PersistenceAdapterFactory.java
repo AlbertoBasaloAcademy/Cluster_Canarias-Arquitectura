@@ -6,7 +6,7 @@ import com.astrobookings.domain.ports.output.NotificationService;
 import com.astrobookings.domain.ports.output.PaymentGateway;
 import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class InfrastructureAdapterFactory {
+public class PersistenceAdapterFactory {
   private static final RocketRepository rocketRepository = new RocketInMemoryRepository();
   private static final FlightRepository flightRepository = new FlightInMemoryRepository();
   private static final BookingRepository bookingRepository = new BookingInMemoryRepository();

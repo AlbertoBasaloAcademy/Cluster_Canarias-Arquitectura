@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.astrobookings.domain.BookingService;
 import com.astrobookings.domain.models.CreateBookingCommand;
-import com.astrobookings.infrastructure.persistence.InfrastructureAdapterFactory;
+import com.astrobookings.infrastructure.persistence.PersistenceAdapterFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -14,11 +14,11 @@ public class BookingHandler extends BaseHandler {
 
   public BookingHandler() {
     this.bookingService = new BookingService(
-        InfrastructureAdapterFactory.getBookingRepository(),
-        InfrastructureAdapterFactory.getFlightRepository(),
-        InfrastructureAdapterFactory.getRocketRepository(),
-        InfrastructureAdapterFactory.getPaymentGateway(),
-        InfrastructureAdapterFactory.getNotificationService());
+        PersistenceAdapterFactory.getBookingRepository(),
+        PersistenceAdapterFactory.getFlightRepository(),
+        PersistenceAdapterFactory.getRocketRepository(),
+        PersistenceAdapterFactory.getPaymentGateway(),
+        PersistenceAdapterFactory.getNotificationService());
   }
 
   @Override
