@@ -6,22 +6,18 @@ import java.util.List;
 
 import com.astrobookings.persistence.BookingRepository;
 import com.astrobookings.persistence.FlightRepository;
+import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.models.Booking;
 import com.astrobookings.persistence.models.Flight;
 import com.astrobookings.persistence.models.FlightStatus;
 
 public class CancellationService {
-  private final FlightRepository flightRepository;
-  private final BookingRepository bookingRepository;
-  private final PaymentGateway paymentGateway;
-  private final NotificationService notificationService;
+  private final FlightRepository flightRepository = RepositoryFactory.getFlightRepository();
+  private final BookingRepository bookingRepository = RepositoryFactory.getBookingRepository();
+  private final PaymentGateway paymentGateway = new PaymentGateway();
+  private final NotificationService notificationService = new NotificationService();
 
-  public CancellationService(FlightRepository flightRepository, BookingRepository bookingRepository,
-      PaymentGateway paymentGateway, NotificationService notificationService) {
-    this.flightRepository = flightRepository;
-    this.bookingRepository = bookingRepository;
-    this.paymentGateway = paymentGateway;
-    this.notificationService = notificationService;
+  public CancellationService() {
   }
 
   public int cancelFlights() {

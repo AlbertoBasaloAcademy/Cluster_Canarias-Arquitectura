@@ -4,20 +4,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.astrobookings.business.BookingService;
-import com.astrobookings.business.NotificationService;
-import com.astrobookings.business.PaymentGateway;
 import com.astrobookings.business.models.CreateBookingCommand;
-import com.astrobookings.persistence.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class BookingHandler extends BaseHandler {
-  private final BookingService bookingService = new BookingService(
-      RepositoryFactory.getBookingRepository(),
-      RepositoryFactory.getFlightRepository(),
-      RepositoryFactory.getRocketRepository(),
-      new PaymentGateway(),
-      new NotificationService());
+  private final BookingService bookingService = new BookingService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

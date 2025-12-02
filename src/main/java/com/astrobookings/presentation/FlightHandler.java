@@ -6,15 +6,11 @@ import java.util.Map;
 
 import com.astrobookings.business.FlightService;
 import com.astrobookings.business.models.CreateFlightCommand;
-import com.astrobookings.persistence.RepositoryFactory;
-import com.astrobookings.persistence.models.Flight;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class FlightHandler extends BaseHandler {
-  private final FlightService flightService = new FlightService(
-      RepositoryFactory.getFlightRepository(),
-      RepositoryFactory.getRocketRepository());
+  private final FlightService flightService = new FlightService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {
@@ -44,7 +40,7 @@ public class FlightHandler extends BaseHandler {
       JsonNode jsonNode = readJsonBody(exchange);
       CreateFlightCommand command = mapCreateFlight(jsonNode);
 
-      Flight saved = flightService.createFlight(command);
+      var saved = flightService.createFlight(command);
       sendJsonResponse(exchange, 201, saved);
     } catch (Exception e) {
       handleException(exchange, e);

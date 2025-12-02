@@ -5,14 +5,14 @@ import java.util.List;
 import com.astrobookings.business.models.BusinessErrorCode;
 import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateRocketCommand;
+import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Rocket;
 
 public class RocketService {
-  private final RocketRepository rocketRepository;
+  private final RocketRepository rocketRepository = RepositoryFactory.getRocketRepository();
 
-  public RocketService(RocketRepository rocketRepository) {
-    this.rocketRepository = rocketRepository;
+  public RocketService() {
   }
 
   public List<Rocket> getAll() {

@@ -4,17 +4,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.astrobookings.business.CancellationService;
-import com.astrobookings.business.NotificationService;
-import com.astrobookings.business.PaymentGateway;
-import com.astrobookings.persistence.RepositoryFactory;
 import com.sun.net.httpserver.HttpExchange;
 
 public class AdminHandler extends BaseHandler {
-  private final CancellationService cancellationService = new CancellationService(
-      RepositoryFactory.getFlightRepository(),
-      RepositoryFactory.getBookingRepository(),
-      new PaymentGateway(),
-      new NotificationService());
+  private final CancellationService cancellationService = new CancellationService();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

@@ -7,19 +7,18 @@ import com.astrobookings.business.models.BusinessErrorCode;
 import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateFlightCommand;
 import com.astrobookings.persistence.FlightRepository;
+import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Flight;
 import com.astrobookings.persistence.models.FlightStatus;
 import com.astrobookings.persistence.models.Rocket;
 
 public class FlightService {
-  private final FlightRepository flightRepository;
-  private final RocketRepository rocketRepository;
+  private final FlightRepository flightRepository = RepositoryFactory.getFlightRepository();
+  private final RocketRepository rocketRepository = RepositoryFactory.getRocketRepository();
   private static final int DEFAULT_MIN_PASSENGERS = 5;
 
-  public FlightService(FlightRepository flightRepository, RocketRepository rocketRepository) {
-    this.flightRepository = flightRepository;
-    this.rocketRepository = rocketRepository;
+  public FlightService() {
   }
 
   public List<Flight> getFlights(String statusFilter) {

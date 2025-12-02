@@ -63,19 +63,18 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 La aplicación utiliza una arquitectura en capas con interfaces para infraestructura y persistencia, y clases concretas para servicios.
 
 - **presentation**: 
-  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Instancian directamente los servicios concretos con sus dependencias.
+  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Instancian directamente los servicios concretos.
   - **HTTP response models**: (ErrorResponse).
 
 - **business**: 
-  - **Servicios**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Clases concretas que implementan la lógica de negocio y dependen de interfaces de repositorio y clases concretas de infraestructura.
+  - **Servicios**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Clases concretas que implementan la lógica de negocio y dependen de interfaces y factoría de persistencia y clases concretas de infraestructura.
   - **Infraestructura**: (`PaymentGateway`, `NotificationService`). Clases concretas para gateways/infraestructura.
   - **DTOs y Excepciones**: (CreateRocketCommand, BusinessException, etc.).
 
 - **persistence**: 
   - **Interfaces de Repositorio**: (`RocketRepository`, `FlightRepository`, `BookingRepository`).
   - **Implementaciones de Repositorio**: (`RocketInMemoryRepository`, etc.). Implementaciones en memoria.
-  - **Factorías**:
-    - `RepositoryFactory`: Provee instancias de repositorios.
+  - **Factorías**: `RepositoryFactory`: Provee instancias de repositorios.
   - **Data models**: (Rocket, Flight, Booking, FlightStatus).
 
 ## Flujo de Datos y Dependencias

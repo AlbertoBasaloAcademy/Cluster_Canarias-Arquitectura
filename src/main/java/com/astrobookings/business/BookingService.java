@@ -9,6 +9,7 @@ import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateBookingCommand;
 import com.astrobookings.persistence.BookingRepository;
 import com.astrobookings.persistence.FlightRepository;
+import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Booking;
 import com.astrobookings.persistence.models.Flight;
@@ -16,19 +17,14 @@ import com.astrobookings.persistence.models.FlightStatus;
 import com.astrobookings.persistence.models.Rocket;
 
 public class BookingService {
-  private final BookingRepository bookingRepository;
-  private final FlightRepository flightRepository;
-  private final RocketRepository rocketRepository;
-  private final PaymentGateway paymentGateway;
-  private final NotificationService notificationService;
+  private final BookingRepository bookingRepository = RepositoryFactory.getBookingRepository();
+  private final FlightRepository flightRepository = RepositoryFactory.getFlightRepository();
+  private final RocketRepository rocketRepository = RepositoryFactory.getRocketRepository();
+  private final PaymentGateway paymentGateway = new PaymentGateway();
+  private final NotificationService notificationService = new NotificationService();
 
-  public BookingService(BookingRepository bookingRepository, FlightRepository flightRepository,
-      RocketRepository rocketRepository, PaymentGateway paymentGateway, NotificationService notificationService) {
-    this.bookingRepository = bookingRepository;
-    this.flightRepository = flightRepository;
-    this.rocketRepository = rocketRepository;
-    this.paymentGateway = paymentGateway;
-    this.notificationService = notificationService;
+  public BookingService() {
+
   }
 
   public Booking createBooking(CreateBookingCommand command) {
