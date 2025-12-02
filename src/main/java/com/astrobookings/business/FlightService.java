@@ -3,9 +3,9 @@ package com.astrobookings.business;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.astrobookings.business.models.BusinessErrorCode;
+import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateFlightCommand;
-import com.astrobookings.business.models.NotFoundException;
-import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
 import com.astrobookings.persistence.models.Flight;
@@ -44,31 +44,32 @@ public class FlightService {
 
   private void validateFlight(Flight flight) {
     if (flight.getRocketId() == null || flight.getRocketId().isBlank()) {
-      throw new ValidationException("Rocket ID must be provided");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Rocket ID must be provided");
     }
     if (flight.getDepartureDate() == null) {
-      throw new ValidationException("Departure date must be provided");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date must be provided");
     }
     if (flight.getBasePrice() <= 0) {
-      throw new ValidationException("Base price must be positive");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Base price must be positive");
     }
     if (flight.getMinPassengers() <= 0) {
-      throw new ValidationException("Min passengers must be positive");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Min passengers must be positive");
     }
 
     Rocket rocket = rocketRepository.findById(flight.getRocketId());
     if (rocket == null) {
-      throw new NotFoundException("Rocket with id " + flight.getRocketId() + " does not exist");
+      throw new BusinessException(BusinessErrorCode.NOT_FOUND,
+          "Rocket with id " + flight.getRocketId() + " does not exist");
     }
 
     LocalDateTime now = LocalDateTime.now();
     if (!flight.getDepartureDate().isAfter(now)) {
-      throw new ValidationException("Departure date must be in the future");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date must be in the future");
     }
 
     LocalDateTime oneYearAhead = now.plusYears(1);
     if (flight.getDepartureDate().isAfter(oneYearAhead)) {
-      throw new ValidationException("Departure date cannot be more than 1 year ahead");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date cannot be more than 1 year ahead");
     }
   }
 }

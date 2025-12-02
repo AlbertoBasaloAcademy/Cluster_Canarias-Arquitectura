@@ -7,8 +7,9 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
+import com.astrobookings.business.models.BusinessErrorCode;
+import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateFlightCommand;
-import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.models.Flight;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -70,7 +71,7 @@ public class FlightHandler extends BaseHandler {
     if (node.has("minPassengers") && !node.get("minPassengers").isNull()) {
       JsonNode minNode = node.get("minPassengers");
       if (!minNode.canConvertToInt()) {
-        throw new ValidationException("Field 'minPassengers' must be an integer");
+        throw new BusinessException(BusinessErrorCode.VALIDATION, "Field 'minPassengers' must be an integer");
       }
       minPassengers = minNode.asInt();
     }
@@ -80,7 +81,7 @@ public class FlightHandler extends BaseHandler {
   private String requireText(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new ValidationException("Field '" + fieldName + "' is required");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
     }
     return value.asText();
   }
@@ -88,7 +89,7 @@ public class FlightHandler extends BaseHandler {
   private double requireDouble(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || !value.isNumber()) {
-      throw new ValidationException("Field '" + fieldName + "' must be numeric");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' must be numeric");
     }
     return value.asDouble();
   }
@@ -97,7 +98,7 @@ public class FlightHandler extends BaseHandler {
     try {
       return LocalDateTime.parse(value);
     } catch (DateTimeParseException exception) {
-      throw new ValidationException("Field 'departureDate' must follow ISO-8601 format");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field 'departureDate' must follow ISO-8601 format");
     }
   }
 }

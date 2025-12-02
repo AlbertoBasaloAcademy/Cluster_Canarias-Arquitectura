@@ -7,8 +7,9 @@ import java.util.Map;
 import com.astrobookings.business.BookingService;
 import com.astrobookings.business.NotificationService;
 import com.astrobookings.business.PaymentGateway;
+import com.astrobookings.business.models.BusinessErrorCode;
+import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateBookingCommand;
-import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -77,7 +78,7 @@ public class BookingHandler extends BaseHandler {
   private String requireText(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new ValidationException("Field '" + fieldName + "' is required");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
     }
     return value.asText();
   }

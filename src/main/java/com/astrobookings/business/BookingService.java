@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.astrobookings.business.models.CapacityException;
+import com.astrobookings.business.models.BusinessErrorCode;
+import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateBookingCommand;
-import com.astrobookings.business.models.NotFoundException;
-import com.astrobookings.business.models.PaymentException;
-import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.BookingRepository;
 import com.astrobookings.persistence.FlightRepository;
 import com.astrobookings.persistence.RocketRepository;
@@ -35,30 +33,30 @@ public class BookingService {
 
   public Booking createBooking(CreateBookingCommand command) {
     if (command.flightId() == null || command.flightId().isBlank()) {
-      throw new ValidationException("Flight ID must be provided");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Flight ID must be provided");
     }
     if (command.passengerName() == null || command.passengerName().isBlank()) {
-      throw new ValidationException("Passenger name must be provided");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Passenger name must be provided");
     }
 
     Flight flight = flightRepository.findById(command.flightId());
     if (flight == null) {
-      throw new NotFoundException("Flight not found");
+      throw new BusinessException(BusinessErrorCode.NOT_FOUND, "Flight not found");
     }
     if (flight.getStatus() == FlightStatus.CANCELLED || flight.getStatus() == FlightStatus.SOLD_OUT) {
-      throw new ValidationException("Flight is not available for booking");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Flight is not available for booking");
     }
 
     Rocket rocket = rocketRepository.findById(flight.getRocketId());
     if (rocket == null) {
-      throw new NotFoundException("Rocket not found");
+      throw new BusinessException(BusinessErrorCode.NOT_FOUND, "Rocket not found");
     }
 
     List<Booking> existingBookings = bookingRepository.findByFlightId(command.flightId());
     int capacity = rocket.getCapacity();
     int currentBookings = existingBookings.size();
     if (currentBookings >= capacity) {
-      throw new CapacityException("Flight is sold out");
+      throw new BusinessException(BusinessErrorCode.CAPACITY, "Flight is sold out");
     }
 
     double discount = calculateDiscount(flight, currentBookings, capacity);
@@ -68,7 +66,7 @@ public class BookingService {
     try {
       transactionId = paymentGateway.processPayment(finalPrice);
     } catch (Exception e) {
-      throw new PaymentException(e.getMessage());
+      throw new BusinessException(BusinessErrorCode.PAYMENT, e.getMessage());
     }
 
     Booking booking = new Booking();

@@ -3,8 +3,9 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.RocketService;
+import com.astrobookings.business.models.BusinessErrorCode;
+import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateRocketCommand;
-import com.astrobookings.business.models.ValidationException;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -59,7 +60,7 @@ public class RocketHandler extends BaseHandler {
   private String requireText(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new ValidationException("Field '" + fieldName + "' is required");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
     }
     return value.asText();
   }
@@ -67,7 +68,7 @@ public class RocketHandler extends BaseHandler {
   private int requireInt(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || !value.canConvertToInt()) {
-      throw new ValidationException("Field '" + fieldName + "' must be an integer");
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' must be an integer");
     }
     return value.asInt();
   }

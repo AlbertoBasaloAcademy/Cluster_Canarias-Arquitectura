@@ -69,7 +69,7 @@ La aplicación utiliza una arquitectura en capas con interfaces para infraestruc
 - **business**: 
   - **Servicios**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Clases concretas que implementan la lógica de negocio y dependen de interfaces de repositorio y clases concretas de infraestructura.
   - **Infraestructura**: (`PaymentGateway`, `NotificationService`). Clases concretas para gateways/infraestructura.
-  - **DTOs y Excepciones**: (CreateRocketCommand, ValidationException, etc.).
+  - **DTOs y Excepciones**: (CreateRocketCommand, BusinessException, etc.).
 
 - **persistence**: 
   - **Interfaces de Repositorio**: (`RocketRepository`, `FlightRepository`, `BookingRepository`).
