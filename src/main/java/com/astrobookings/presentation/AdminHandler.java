@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.astrobookings.domain.CancellationService;
-import com.astrobookings.infrastructure.InfrastructureFactory;
+import com.astrobookings.infrastructure.InfrastructureAdapterFactory;
 import com.sun.net.httpserver.HttpExchange;
 
 public class AdminHandler extends BaseHandler {
@@ -12,10 +12,10 @@ public class AdminHandler extends BaseHandler {
 
   public AdminHandler() {
     this.cancellationService = new CancellationService(
-        InfrastructureFactory.getFlightRepository(),
-        InfrastructureFactory.getBookingRepository(),
-        InfrastructureFactory.getPaymentGateway(),
-        InfrastructureFactory.getNotificationService());
+        InfrastructureAdapterFactory.getFlightRepository(),
+        InfrastructureAdapterFactory.getBookingRepository(),
+        InfrastructureAdapterFactory.getPaymentGateway(),
+        InfrastructureAdapterFactory.getNotificationService());
   }
 
   @Override

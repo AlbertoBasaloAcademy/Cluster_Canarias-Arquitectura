@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.astrobookings.domain.FlightService;
 import com.astrobookings.domain.models.CreateFlightCommand;
-import com.astrobookings.infrastructure.InfrastructureFactory;
+import com.astrobookings.infrastructure.InfrastructureAdapterFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -15,8 +15,8 @@ public class FlightHandler extends BaseHandler {
 
   public FlightHandler() {
     this.flightService = new FlightService(
-        InfrastructureFactory.getFlightRepository(),
-        InfrastructureFactory.getRocketRepository());
+        InfrastructureAdapterFactory.getFlightRepository(),
+        InfrastructureAdapterFactory.getRocketRepository());
   }
 
   @Override

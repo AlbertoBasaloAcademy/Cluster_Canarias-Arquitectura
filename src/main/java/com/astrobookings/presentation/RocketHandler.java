@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.astrobookings.domain.RocketService;
 import com.astrobookings.domain.models.CreateRocketCommand;
-import com.astrobookings.infrastructure.InfrastructureFactory;
+import com.astrobookings.infrastructure.InfrastructureAdapterFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -12,7 +12,7 @@ public class RocketHandler extends BaseHandler {
   private final RocketService rocketService;
 
   public RocketHandler() {
-    this.rocketService = new RocketService(InfrastructureFactory.getRocketRepository());
+    this.rocketService = new RocketService(InfrastructureAdapterFactory.getRocketRepository());
   }
 
   @Override
