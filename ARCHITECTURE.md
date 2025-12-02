@@ -2,7 +2,7 @@
 
 ## Introducción
 
-AstroBookings es una aplicación de reservas de viajes espaciales implementada con arquitectura en capas. Utiliza Java 21, JDK HTTP Server y Jackson para JSON. La base de datos es en memoria (HashMap).
+AstroBookings es una aplicación de reservas de viajes espaciales implementada con una arquitectura de puertos y adaptadores (hexagonal ligera). Los servicios de dominio solo dependen de puertos definidos en el propio dominio y las dependencias concretas se resuelven en infraestructura mediante adaptadores (repositorios en memoria y gateways de consola). Utiliza Java 21, JDK HTTP Server y Jackson para JSON. La base de datos es en memoria (HashMap).
 
 **Características principales**:
 - Gestión de cohetes, vuelos y reservas
@@ -47,12 +47,23 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 
 ```
 ├── src/main/java/com/astrobookings/
-│   ├── presentation/ # HTTP Handlers 
-│   │   └─ models/    # Http Responses
-│   ├── business/     # Services & Gateways
-│   │   └─ models/    # DTOs and Exceptions
-│   └── persistence/  # Repositories & models
-│       └─ models/    # Data models
+│   ├── presentation/          # Adaptadores de entrada (HTTP handlers)
+│   │   ├── AdminHandler.java
+│   │   ├── BookingHandler.java
+│   │   ├── FlightHandler.java
+│   │   ├── RocketHandler.java
+│   │   └── models/            # Respuestas HTTP (ErrorResponse, mapper)
+│   ├── domain/                # Lógica de negocio y puertos
+│   │   ├── BookingService.java 
+│   │   ├── CancellationService.java
+│   │   ├── FlightService.java
+│   │   ├── RocketService.java
+│   │   ├── models/            # Entidades planas, comandos, errores
+│   │   └── ports/             # Puertos: repositorios, gateways, notificaciones
+│   └── infrastructure/        # Adaptadores de los puertos
+│       ├── InfrastructureFactory.java  # Composition root que resuelve puertos
+│       ├── *InMemoryRepository.java    # Adaptadores en memoria de repositorios
+│       └── *Console*.java              # Adaptadores en consola de gateways y servicios
 ├── pom.xml
 ├── README.md
 └── ARCHITECTURE.md
@@ -60,63 +71,59 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 
 ### Capas y Componentes:
 
-La aplicación utiliza una arquitectura en capas con interfaces para infraestructura y persistencia, y clases concretas para servicios.
+A continuación se describe cómo encaja cada capa dentro del enfoque ports & adapters:
 
-- **presentation**: 
-  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Instancian directamente los servicios concretos.
-  - **HTTP response models**: (ErrorResponse).
-
-- **business**: 
-  - **Servicios**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Clases concretas que implementan la lógica de negocio y dependen de interfaces y factoría de persistencia y clases concretas de infraestructura.
-  - **Infraestructura**: (`PaymentGateway`, `NotificationService`). Clases concretas para gateways/infraestructura.
-  - **DTOs y Excepciones**: (CreateRocketCommand, BusinessException, etc.).
-
-- **persistence**: 
-  - **Interfaces de Repositorio**: (`RocketRepository`, `FlightRepository`, `BookingRepository`).
-  - **Implementaciones de Repositorio**: (`RocketInMemoryRepository`, etc.). Implementaciones en memoria.
-  - **Factorías**: `RepositoryFactory`: Provee instancias de repositorios.
-  - **Data models**: (Rocket, Flight, Booking, FlightStatus).
+- **presentation (adaptadores de entrada)**: HTTP handlers basados en `com.sun.net.httpserver`. Cada handler crea el servicio correspondiente, obtiene las dependencias desde `InfrastructureFactory` y transforma JSON ↔ DTOs (`ErrorResponse`, `ErrorResponseMapper`).
+- **domain (núcleo + puertos)**:
+  - **Servicios**: `RocketService`, `FlightService`, `BookingService`, `CancellationService`. Todo el negocio sucede aquí.
+  - **Modelos**: Entidades (`Rocket`, `Flight`, `Booking`), estados (`FlightStatus`), comandos (`CreateRocketCommand`, etc.), excepciones (`BusinessException`).
+  - **Puertos**: Interfaces como `RocketRepository`, `FlightRepository`, `BookingRepository`, `PaymentGateway`, `NotificationService`. Los servicios solo conocen estos puertos.
+- **infrastructure (adaptadores de salida)**:
+  - **Repositorios en memoria**: `RocketInMemoryRepository`, `FlightInMemoryRepository`, `BookingInMemoryRepository` implementan los puertos de persistencia.
+  - **Gateways simulados**: `PaymentConsoleGateway` y `NotificationConsoleService` cumplen los puertos externos.
+  - **Infraestructura común**: `InfrastructureFactory` actúa como composición e inyección manual, exponiendo instancias singleton de los adaptadores.
 
 ## Flujo de Datos y Dependencias
 
-El flujo de control va de arriba hacia abajo (Presentation -> Business -> Persistence), con dependencias directas a clases concretas en servicios y abstracciones en infraestructura y persistencia.
+El flujo de control va de los adaptadores de entrada hacia el dominio, y desde el dominio hacia los puertos de salida. Las dependencias se invierten: los servicios de dominio solo conocen interfaces (puertos), y `InfrastructureFactory` provee los adaptadores concretos.
 
 ### Crear Reserva (POST /bookings)
 ```
-Presentation Layer
-  └─ BookingHandler
-       ↓ (instancia directamente BookingService con dependencias)
-     Business Layer (Clase: BookingService)
-       └─ BookingService
-            ├─ PaymentGateway (Clase) -> PaymentGateway
-            └─ NotificationService (Clase) -> NotificationService
-                 ↓
-               Persistence Layer (Interface: BookingRepository, FlightRepository)
-                 ├─ BookingInMemoryRepository (save booking)
-                 └─ FlightInMemoryRepository (update flight status)
-                      ↓
-                    Model Layer
-                      ├─ Booking (with paymentTransactionId)
-                      └─ Flight (status: SCHEDULED → CONFIRMED)
+Presentation (BookingHandler)
+  ↓ (crea BookingService y resuelve puertos via InfrastructureFactory)
+Domain Service (BookingService)
+  ├─ BookingRepository / FlightRepository / RocketRepository
+  ├─ PaymentGateway
+  └─ NotificationService
+       ↓ (puertos se satisfacen con adaptadores concretos)
+Infrastructure Adapters
+  ├─ BookingInMemoryRepository / FlightInMemoryRepository / RocketInMemoryRepository
+  ├─ PaymentConsoleGateway
+  └─ NotificationConsoleService
+       ↓
+Domain Models
+  ├─ Booking (con paymentTransactionId)
+  └─ Flight (transiciones SCHEDULED → CONFIRMED / SOLD_OUT)
 ```
 
 ### Cancelar Vuelos (POST /admin/cancel-flights)
 ```
-Presentation Layer
-  └─ AdminHandler
-       ↓ (instancia directamente CancellationService con dependencias)
-     Business Layer (Clase: CancellationService)
-       └─ CancellationService
-            ├─ PaymentGateway (Clase) -> PaymentGateway
-            └─ NotificationService (Clase) -> NotificationService
-                 ↓
-               Persistence Layer (Interface: FlightRepository, BookingRepository)
-                 ├─ FlightInMemoryRepository (find & update to CANCELLED)
-                 └─ BookingInMemoryRepository (get bookings for refunds)
-                      ↓
-                    Model Layer
-                      ├─ Flight (status: SCHEDULED → CANCELLED)
-                      └─ Booking (refunded via paymentTransactionId)
+Presentation (AdminHandler)
+  ↓ (crea CancellationService con puertos desde InfrastructureFactory)
+Domain Service (CancellationService)
+  ├─ FlightRepository / BookingRepository
+  ├─ PaymentGateway (reembolsos)
+  └─ NotificationService (avisos)
+       ↓ (puertos ←→ adaptadores)
+Infrastructure Adapters
+  ├─ FlightInMemoryRepository (actualiza estado a CANCELLED)
+  ├─ BookingInMemoryRepository (obtiene reservas a reembolsar)
+  ├─ PaymentConsoleGateway (simula reembolso)
+  └─ NotificationConsoleService (avisa a pasajeros)
+       ↓
+Domain Models
+  ├─ Flight (transición SCHEDULED → CANCELLED)
+  └─ Booking (marca paymentTransactionId reembolsado)
 ```
 
 
