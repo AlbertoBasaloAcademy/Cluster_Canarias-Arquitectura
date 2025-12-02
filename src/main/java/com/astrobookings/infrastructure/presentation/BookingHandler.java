@@ -3,22 +3,16 @@ package com.astrobookings.infrastructure.presentation;
 import java.io.IOException;
 import java.util.Map;
 
-import com.astrobookings.domain.BookingService;
 import com.astrobookings.domain.models.CreateBookingCommand;
-import com.astrobookings.infrastructure.persistence.PersistenceAdapterFactory;
+import com.astrobookings.domain.ports.input.BookingsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class BookingHandler extends BaseHandler {
-  private final BookingService bookingService;
+  private final BookingsUseCases bookingsUseCases;
 
-  public BookingHandler() {
-    this.bookingService = new BookingService(
-        PersistenceAdapterFactory.getBookingRepository(),
-        PersistenceAdapterFactory.getFlightRepository(),
-        PersistenceAdapterFactory.getRocketRepository(),
-        PersistenceAdapterFactory.getPaymentGateway(),
-        PersistenceAdapterFactory.getNotificationService());
+  public BookingHandler(BookingsUseCases bookingsUseCases) {
+    this.bookingsUseCases = bookingsUseCases;
   }
 
   @Override
@@ -40,7 +34,7 @@ public class BookingHandler extends BaseHandler {
       String flightId = params.get("flightId");
       String passengerName = params.get("passengerName");
 
-      var bookings = bookingService.getBookings(flightId, passengerName);
+      var bookings = bookingsUseCases.getBookings(flightId, passengerName);
       sendJsonResponse(exchange, 200, bookings);
     } catch (Exception e) {
       handleException(exchange, e);
@@ -52,7 +46,7 @@ public class BookingHandler extends BaseHandler {
       JsonNode jsonNode = readJsonBody(exchange);
       CreateBookingCommand command = mapCreateBooking(jsonNode);
 
-      var booking = bookingService.createBooking(command);
+      var booking = bookingsUseCases.createBooking(command);
       sendJsonResponse(exchange, 201, booking);
     } catch (Exception e) {
       handleException(exchange, e);

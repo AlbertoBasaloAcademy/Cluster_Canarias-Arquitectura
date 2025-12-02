@@ -18,14 +18,14 @@ import com.astrobookings.domain.ports.output.NotificationService;
 import com.astrobookings.domain.ports.output.PaymentGateway;
 import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class BookingService implements BookingsUseCases {
+public class BookingsService implements BookingsUseCases {
   private final BookingRepository bookingRepository;
   private final FlightRepository flightRepository;
   private final RocketRepository rocketRepository;
   private final PaymentGateway paymentGateway;
   private final NotificationService notificationService;
 
-  public BookingService(BookingRepository bookingRepository, FlightRepository flightRepository,
+  public BookingsService(BookingRepository bookingRepository, FlightRepository flightRepository,
       RocketRepository rocketRepository, PaymentGateway paymentGateway, NotificationService notificationService) {
     this.bookingRepository = bookingRepository;
     this.flightRepository = flightRepository;

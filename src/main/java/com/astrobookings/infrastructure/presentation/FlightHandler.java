@@ -4,19 +4,16 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import com.astrobookings.domain.FlightService;
 import com.astrobookings.domain.models.CreateFlightCommand;
-import com.astrobookings.infrastructure.persistence.PersistenceAdapterFactory;
+import com.astrobookings.domain.ports.input.FlightsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class FlightHandler extends BaseHandler {
-  private final FlightService flightService;
+  private final FlightsUseCases flightUseCases;
 
-  public FlightHandler() {
-    this.flightService = new FlightService(
-        PersistenceAdapterFactory.getFlightRepository(),
-        PersistenceAdapterFactory.getRocketRepository());
+  public FlightHandler(FlightsUseCases flightUseCases) {
+    this.flightUseCases = flightUseCases;
   }
 
   @Override
@@ -36,7 +33,7 @@ public class FlightHandler extends BaseHandler {
     try {
       Map<String, String> params = getQueryParams(exchange);
       String statusFilter = params.get("status");
-      sendJsonResponse(exchange, 200, flightService.getFlights(statusFilter));
+      sendJsonResponse(exchange, 200, flightUseCases.getFlights(statusFilter));
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -47,7 +44,7 @@ public class FlightHandler extends BaseHandler {
       JsonNode jsonNode = readJsonBody(exchange);
       CreateFlightCommand command = mapCreateFlight(jsonNode);
 
-      var saved = flightService.createFlight(command);
+      var saved = flightUseCases.createFlight(command);
       sendJsonResponse(exchange, 201, saved);
     } catch (Exception e) {
       handleException(exchange, e);

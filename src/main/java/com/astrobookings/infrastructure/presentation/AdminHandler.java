@@ -3,19 +3,14 @@ package com.astrobookings.infrastructure.presentation;
 import java.io.IOException;
 import java.util.Map;
 
-import com.astrobookings.domain.CancellationService;
-import com.astrobookings.infrastructure.persistence.PersistenceAdapterFactory;
+import com.astrobookings.domain.ports.input.CancellationUseCases;
 import com.sun.net.httpserver.HttpExchange;
 
 public class AdminHandler extends BaseHandler {
-  private final CancellationService cancellationService;
+  private final CancellationUseCases cancellationUseCases;
 
-  public AdminHandler() {
-    this.cancellationService = new CancellationService(
-        PersistenceAdapterFactory.getFlightRepository(),
-        PersistenceAdapterFactory.getBookingRepository(),
-        PersistenceAdapterFactory.getPaymentGateway(),
-        PersistenceAdapterFactory.getNotificationService());
+  public AdminHandler(CancellationUseCases cancellationUseCases) {
+    this.cancellationUseCases = cancellationUseCases;
   }
 
   @Override
@@ -31,7 +26,7 @@ public class AdminHandler extends BaseHandler {
 
   private void handlePost(HttpExchange exchange) throws IOException {
     try {
-      int cancelled = cancellationService.cancelFlights();
+      int cancelled = cancellationUseCases.cancelFlights();
       sendJsonResponse(exchange, 200,
           Map.of("message", "Flight cancellation check completed", "cancelledFlights", cancelled));
     } catch (Exception e) {
