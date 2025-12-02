@@ -11,13 +11,14 @@ import com.astrobookings.domain.models.CreateBookingCommand;
 import com.astrobookings.domain.models.Flight;
 import com.astrobookings.domain.models.FlightStatus;
 import com.astrobookings.domain.models.Rocket;
+import com.astrobookings.domain.ports.input.BookingsUseCases;
 import com.astrobookings.domain.ports.output.BookingRepository;
 import com.astrobookings.domain.ports.output.FlightRepository;
 import com.astrobookings.domain.ports.output.NotificationService;
 import com.astrobookings.domain.ports.output.PaymentGateway;
 import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class BookingService {
+public class BookingService implements BookingsUseCases {
   private final BookingRepository bookingRepository;
   private final FlightRepository flightRepository;
   private final RocketRepository rocketRepository;

@@ -7,12 +7,13 @@ import java.util.List;
 import com.astrobookings.domain.models.Booking;
 import com.astrobookings.domain.models.Flight;
 import com.astrobookings.domain.models.FlightStatus;
+import com.astrobookings.domain.ports.input.CancellationUseCases;
 import com.astrobookings.domain.ports.output.BookingRepository;
 import com.astrobookings.domain.ports.output.FlightRepository;
 import com.astrobookings.domain.ports.output.NotificationService;
 import com.astrobookings.domain.ports.output.PaymentGateway;
 
-public class CancellationService {
+public class CancellationService implements CancellationUseCases {
   private final FlightRepository flightRepository;
   private final BookingRepository bookingRepository;
   private final PaymentGateway paymentGateway;
