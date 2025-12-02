@@ -1,6 +1,7 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
+import java.util.Map;
 
 import com.astrobookings.business.CancellationService;
 import com.astrobookings.business.NotificationService;
@@ -29,9 +30,8 @@ public class AdminHandler extends BaseHandler {
   private void handlePost(HttpExchange exchange) throws IOException {
     try {
       int cancelled = cancellationService.cancelFlights();
-      String response = "{\"message\": \"Flight cancellation check completed\", \"cancelledFlights\": "
-          + cancelled + "}";
-      sendResponse(exchange, 200, response);
+      sendJsonResponse(exchange, 200,
+          Map.of("message", "Flight cancellation check completed", "cancelledFlights", cancelled));
     } catch (Exception e) {
       handleException(exchange, e);
     }

@@ -1,14 +1,11 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 
 import com.astrobookings.business.BookingService;
 import com.astrobookings.business.NotificationService;
 import com.astrobookings.business.PaymentGateway;
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateBookingCommand;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,19 +34,12 @@ public class BookingHandler extends BaseHandler {
 
   private void handleGet(HttpExchange exchange) throws IOException {
     try {
-      URI uri = exchange.getRequestURI();
-      String query = uri.getQuery();
-      String flightId = null;
-      String passengerName = null;
-      if (query != null) {
-        Map<String, String> params = this.parseQuery(query);
-        flightId = params.get("flightId");
-        passengerName = params.get("passengerName");
-      }
+      Map<String, String> params = getQueryParams(exchange);
+      String flightId = params.get("flightId");
+      String passengerName = params.get("passengerName");
 
       var bookings = bookingService.getBookings(flightId, passengerName);
-      String response = this.objectMapper.writeValueAsString(bookings);
-      sendResponse(exchange, 200, response);
+      sendJsonResponse(exchange, 200, bookings);
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -57,13 +47,11 @@ public class BookingHandler extends BaseHandler {
 
   private void handlePost(HttpExchange exchange) throws IOException {
     try {
-      String body = readRequestBody(exchange);
-      JsonNode jsonNode = this.objectMapper.readTree(body);
+      JsonNode jsonNode = readJsonBody(exchange);
       CreateBookingCommand command = mapCreateBooking(jsonNode);
 
       var booking = bookingService.createBooking(command);
-      String response = this.objectMapper.writeValueAsString(booking);
-      sendResponse(exchange, 201, response);
+      sendJsonResponse(exchange, 201, booking);
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -73,13 +61,5 @@ public class BookingHandler extends BaseHandler {
     String flightId = requireText(node, "flightId");
     String passengerName = requireText(node, "passengerName");
     return new CreateBookingCommand(flightId, passengerName);
-  }
-
-  private String requireText(JsonNode node, String fieldName) {
-    JsonNode value = node.get(fieldName);
-    if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
-    }
-    return value.asText();
   }
 }

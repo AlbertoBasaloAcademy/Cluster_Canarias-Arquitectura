@@ -1,9 +1,7 @@
 package com.astrobookings.presentation;
 
 import java.io.IOException;
-import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
@@ -35,15 +33,9 @@ public class FlightHandler extends BaseHandler {
 
   private void handleGet(HttpExchange exchange) throws IOException {
     try {
-      URI uri = exchange.getRequestURI();
-      String query = uri.getQuery();
-      String statusFilter = null;
-      if (query != null) {
-        Map<String, String> params = this.parseQuery(query);
-        statusFilter = params.get("status");
-      }
-      String response = this.objectMapper.writeValueAsString(flightService.getFlights(statusFilter));
-      sendResponse(exchange, 200, response);
+      Map<String, String> params = getQueryParams(exchange);
+      String statusFilter = params.get("status");
+      sendJsonResponse(exchange, 200, flightService.getFlights(statusFilter));
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -51,13 +43,11 @@ public class FlightHandler extends BaseHandler {
 
   private void handlePost(HttpExchange exchange) throws IOException {
     try {
-      String body = readRequestBody(exchange);
-      JsonNode jsonNode = this.objectMapper.readTree(body);
+      JsonNode jsonNode = readJsonBody(exchange);
       CreateFlightCommand command = mapCreateFlight(jsonNode);
 
       Flight saved = flightService.createFlight(command);
-      String response = this.objectMapper.writeValueAsString(saved);
-      sendResponse(exchange, 201, response);
+      sendJsonResponse(exchange, 201, saved);
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -76,29 +66,5 @@ public class FlightHandler extends BaseHandler {
       minPassengers = minNode.asInt();
     }
     return new CreateFlightCommand(rocketId, departureDate, basePrice, minPassengers);
-  }
-
-  private String requireText(JsonNode node, String fieldName) {
-    JsonNode value = node.get(fieldName);
-    if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
-    }
-    return value.asText();
-  }
-
-  private double requireDouble(JsonNode node, String fieldName) {
-    JsonNode value = node.get(fieldName);
-    if (value == null || value.isNull() || !value.isNumber()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' must be numeric");
-    }
-    return value.asDouble();
-  }
-
-  private LocalDateTime parseDate(String value) {
-    try {
-      return LocalDateTime.parse(value);
-    } catch (DateTimeParseException exception) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field 'departureDate' must follow ISO-8601 format");
-    }
   }
 }

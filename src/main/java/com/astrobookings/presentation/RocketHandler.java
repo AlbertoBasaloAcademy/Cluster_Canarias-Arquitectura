@@ -3,8 +3,6 @@ package com.astrobookings.presentation;
 import java.io.IOException;
 
 import com.astrobookings.business.RocketService;
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateRocketCommand;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,8 +27,7 @@ public class RocketHandler extends BaseHandler {
 
   private void handleGet(HttpExchange exchange) throws IOException {
     try {
-      String response = this.objectMapper.writeValueAsString(rocketService.getAll());
-      sendResponse(exchange, 200, response);
+      sendJsonResponse(exchange, 200, rocketService.getAll());
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -38,13 +35,11 @@ public class RocketHandler extends BaseHandler {
 
   private void handlePost(HttpExchange exchange) throws IOException {
     try {
-      String body = readRequestBody(exchange);
-      JsonNode jsonNode = this.objectMapper.readTree(body);
+      JsonNode jsonNode = readJsonBody(exchange);
       CreateRocketCommand command = mapCreateRocket(jsonNode);
 
       var saved = rocketService.create(command);
-      String response = this.objectMapper.writeValueAsString(saved);
-      sendResponse(exchange, 201, response);
+      sendJsonResponse(exchange, 201, saved);
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -55,21 +50,5 @@ public class RocketHandler extends BaseHandler {
     int capacity = requireInt(jsonNode, "capacity");
     Double speed = jsonNode.hasNonNull("speed") ? jsonNode.get("speed").asDouble() : null;
     return new CreateRocketCommand(name, capacity, speed);
-  }
-
-  private String requireText(JsonNode node, String fieldName) {
-    JsonNode value = node.get(fieldName);
-    if (value == null || value.isNull() || value.asText().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' is required");
-    }
-    return value.asText();
-  }
-
-  private int requireInt(JsonNode node, String fieldName) {
-    JsonNode value = node.get(fieldName);
-    if (value == null || value.isNull() || !value.canConvertToInt()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' must be an integer");
-    }
-    return value.asInt();
   }
 }
