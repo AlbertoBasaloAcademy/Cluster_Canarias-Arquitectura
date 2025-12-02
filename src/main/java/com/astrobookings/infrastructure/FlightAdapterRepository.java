@@ -1,4 +1,4 @@
-package com.astrobookings.persistence;
+package com.astrobookings.infrastructure;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.astrobookings.persistence.models.Flight;
-import com.astrobookings.persistence.models.FlightStatus;
+import com.astrobookings.domain.model.Flight;
+import com.astrobookings.domain.model.FlightStatus;
+import com.astrobookings.domain.ports.FlightRepositoryPort;
 
-public class FlightRepository {
+public class FlightAdapterRepository implements FlightRepositoryPort {
   private static final Map<String, Flight> flights = new HashMap<>();
   private static int nextId = 1;
 
@@ -30,6 +31,7 @@ public class FlightRepository {
     nextId = 3;
   }
 
+  @Override
   public List<Flight> findAll() {
     LocalDateTime now = LocalDateTime.now();
     return flights.values().stream()
@@ -37,6 +39,7 @@ public class FlightRepository {
         .collect(Collectors.toList());
   }
 
+  @Override
   public List<Flight> findByStatus(String status) {
     try {
       FlightStatus flightStatus = FlightStatus.valueOf(status.toUpperCase());
@@ -49,6 +52,7 @@ public class FlightRepository {
     }
   }
 
+  @Override
   public Flight save(Flight flight) {
     if (flight.getId() == null) {
       flight.setId("f" + nextId++);

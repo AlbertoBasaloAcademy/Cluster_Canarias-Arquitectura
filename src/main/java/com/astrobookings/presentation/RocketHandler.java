@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.astrobookings.persistence.RocketRepository;
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.model.Rocket;
+import com.astrobookings.domain.ports.RocketRepositoryPort;
+import com.astrobookings.infrastructure.RepositoryFactory;
 import com.sun.net.httpserver.HttpExchange;
 
 public class RocketHandler extends BaseHandler {
-  private final RocketRepository rocketRepository = new RocketRepository();
+  private final RocketRepositoryPort rocketRepository = RepositoryFactory.getRocketInstance();
 
   @Override
   public void handle(HttpExchange exchange) throws IOException {

@@ -1,8 +1,8 @@
-package com.astrobookings.business;
+package com.astrobookings.domain;
 
 import java.util.List;
 
-import com.astrobookings.persistence.models.Booking;
+import com.astrobookings.domain.model.Booking;
 
 public class NotificationService {
   public static void notifyConfirmation(String flightId, int passengerCount) {

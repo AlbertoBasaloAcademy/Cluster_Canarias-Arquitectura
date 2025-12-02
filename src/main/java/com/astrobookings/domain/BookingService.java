@@ -1,26 +1,26 @@
-package com.astrobookings.business;
+package com.astrobookings.domain;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.astrobookings.persistence.BookingRepositoryPort;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RocketRepository;
-import com.astrobookings.persistence.models.Booking;
-import com.astrobookings.persistence.models.Flight;
-import com.astrobookings.persistence.models.FlightStatus;
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.model.Booking;
+import com.astrobookings.domain.model.Flight;
+import com.astrobookings.domain.model.FlightStatus;
+import com.astrobookings.domain.model.Rocket;
+import com.astrobookings.domain.ports.BookingRepositoryPort;
+import com.astrobookings.domain.ports.FlightRepositoryPort;
+import com.astrobookings.domain.ports.RocketRepositoryPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BookingService {
   private final BookingRepositoryPort bookingRepository;
-  private final FlightRepository flightRepository;
-  private final RocketRepository rocketRepository;
+  private final FlightRepositoryPort flightRepository;
+  private final RocketRepositoryPort rocketRepository;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public BookingService(BookingRepositoryPort bookingRepository, FlightRepository flightRepository,
-      RocketRepository rocketRepository) {
+  public BookingService(BookingRepositoryPort bookingRepository, FlightRepositoryPort flightRepository,
+      RocketRepositoryPort rocketRepository) {
     this.bookingRepository = bookingRepository;
     this.flightRepository = flightRepository;
     this.rocketRepository = rocketRepository;

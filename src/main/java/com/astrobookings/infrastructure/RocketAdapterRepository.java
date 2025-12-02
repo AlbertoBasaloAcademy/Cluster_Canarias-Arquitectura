@@ -1,13 +1,14 @@
-package com.astrobookings.persistence;
+package com.astrobookings.infrastructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.astrobookings.persistence.models.Rocket;
+import com.astrobookings.domain.model.Rocket;
+import com.astrobookings.domain.ports.RocketRepositoryPort;
 
-public class RocketRepository {
+public class RocketAdapterRepository implements RocketRepositoryPort {
   private static final Map<String, Rocket> rockets = new HashMap<>();
   private static int nextId = 1;
 
@@ -19,10 +20,12 @@ public class RocketRepository {
     nextId = 2;
   }
 
+  @Override
   public List<Rocket> findAll() {
     return new ArrayList<>(rockets.values());
   }
 
+  @Override
   public Rocket save(Rocket rocket) {
     if (rocket.getId() == null) {
       rocket.setId("r" + nextId++);

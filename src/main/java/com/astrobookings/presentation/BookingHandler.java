@@ -7,10 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.astrobookings.business.BookingService;
-import com.astrobookings.persistence.BookingRepositoryInMemory;
-import com.astrobookings.persistence.FlightRepository;
-import com.astrobookings.persistence.RocketRepository;
+import com.astrobookings.domain.BookingService;
+import com.astrobookings.domain.ports.BookingRepositoryPort;
+import com.astrobookings.domain.ports.FlightRepositoryPort;
+import com.astrobookings.domain.ports.RocketRepositoryPort;
+import com.astrobookings.infrastructure.RepositoryFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -18,9 +19,9 @@ public class BookingHandler extends BaseHandler {
   private final BookingService bookingService;
 
   public BookingHandler() {
-    BookingRepositoryInMemory bookingRepository = new BookingRepositoryInMemory();
-    FlightRepository flightRepository = new FlightRepository();
-    RocketRepository rocketRepository = new RocketRepository();
+    BookingRepositoryPort bookingRepository = RepositoryFactory.getBookingInstance();
+    FlightRepositoryPort flightRepository = RepositoryFactory.getFlightInstance();
+    RocketRepositoryPort rocketRepository = RepositoryFactory.getRocketInstance();
     this.bookingService = new BookingService(bookingRepository, flightRepository, rocketRepository);
   }
 

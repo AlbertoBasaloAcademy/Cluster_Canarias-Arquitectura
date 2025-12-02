@@ -1,7 +1,8 @@
-package com.astrobookings.persistence;
+package com.astrobookings.domain.ports;
 
-import com.astrobookings.persistence.models.Booking;
 import java.util.List;
+
+import com.astrobookings.domain.model.Booking;
 
 public interface BookingRepositoryPort {
     List<Booking> findAll();
