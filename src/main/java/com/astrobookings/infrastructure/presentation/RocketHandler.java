@@ -8,14 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 public class RocketHandler extends BaseHandler {
-  // private final RocketService rocketService;
   private final RocketsUseCases rocketsUseCases;
   private HttpExchange exchange;
 
   public RocketHandler(RocketsUseCases rocketsUseCases) {
-    // this.rocketService = null;
-    // this.rocketService = new
-    // RocketService(InfrastructureAdapterFactory.getRocketRepository());
     this.rocketsUseCases = rocketsUseCases;
   }
 

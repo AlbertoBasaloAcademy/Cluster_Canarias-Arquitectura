@@ -21,6 +21,7 @@ public class AstroBookingsApp {
     var bookingRepository = PersistenceAdapterFactory.getBookingRepository();
     var paymentGateway = PersistenceAdapterFactory.getPaymentGateway();
     var notificationService = PersistenceAdapterFactory.getNotificationService();
+
     var rocketUseCase = UseCasesAdapterFactory.getRocketsUseCase(rocketRepository);
     var flightUseCase = UseCasesAdapterFactory.getFlightsUseCase(
         flightRepository, rocketRepository);
@@ -38,7 +39,6 @@ public class AstroBookingsApp {
 
     // Register handlers for endpoints
     server.createContext("/rockets", new RocketHandler(rocketUseCase));
-
     server.createContext("/flights", new FlightHandler(flightUseCase));
     server.createContext("/bookings", new BookingHandler(bookingUseCase));
     server.createContext("/admin/cancel-flights", new AdminHandler(cancellationService));
