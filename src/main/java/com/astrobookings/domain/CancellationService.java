@@ -19,8 +19,11 @@ public class CancellationService implements CancellationUseCases {
   private final PaymentGateway paymentGateway;
   private final NotificationService notificationService;
 
-  public CancellationService(FlightRepository flightRepository, BookingRepository bookingRepository,
-      PaymentGateway paymentGateway, NotificationService notificationService) {
+  public CancellationService(
+      FlightRepository flightRepository,
+      BookingRepository bookingRepository,
+      PaymentGateway paymentGateway,
+      NotificationService notificationService) {
     this.flightRepository = flightRepository;
     this.bookingRepository = bookingRepository;
     this.paymentGateway = paymentGateway;

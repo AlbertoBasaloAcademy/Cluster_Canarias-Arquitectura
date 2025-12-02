@@ -25,8 +25,12 @@ public class BookingsService implements BookingsUseCases {
   private final PaymentGateway paymentGateway;
   private final NotificationService notificationService;
 
-  public BookingsService(BookingRepository bookingRepository, FlightRepository flightRepository,
-      RocketRepository rocketRepository, PaymentGateway paymentGateway, NotificationService notificationService) {
+  public BookingsService(
+      BookingRepository bookingRepository,
+      FlightRepository flightRepository,
+      RocketRepository rocketRepository,
+      PaymentGateway paymentGateway,
+      NotificationService notificationService) {
     this.bookingRepository = bookingRepository;
     this.flightRepository = flightRepository;
     this.rocketRepository = rocketRepository;
