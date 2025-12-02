@@ -1,4 +1,4 @@
-package com.astrobookings.presentation;
+package com.astrobookings.infrastructure.presentation;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,9 +10,9 @@ import java.util.Map;
 
 import com.astrobookings.domain.models.BusinessErrorCode;
 import com.astrobookings.domain.models.BusinessException;
-import com.astrobookings.presentation.models.ErrorResponse;
-import com.astrobookings.presentation.models.ErrorResponseMapper;
-import com.astrobookings.presentation.models.ErrorResponseMapper.ErrorPayload;
+import com.astrobookings.infrastructure.presentation.models.ErrorResponse;
+import com.astrobookings.infrastructure.presentation.models.ErrorResponseMapper;
+import com.astrobookings.infrastructure.presentation.models.ErrorResponseMapper.ErrorPayload;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

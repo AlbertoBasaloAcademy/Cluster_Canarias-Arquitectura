@@ -1,9 +1,9 @@
-package com.astrobookings.infrastructure;
+package com.astrobookings.infrastructure.persistence;
 
 import java.util.List;
 
 import com.astrobookings.domain.models.Booking;
-import com.astrobookings.domain.ports.NotificationService;
+import com.astrobookings.domain.ports.output.NotificationService;
 
 public class NotificationConsoleService implements NotificationService {
   public void notifyConfirmation(String flightId, int passengerCount) {

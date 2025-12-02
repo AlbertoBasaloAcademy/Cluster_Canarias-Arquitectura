@@ -1,4 +1,4 @@
-package com.astrobookings.presentation.models;
+package com.astrobookings.infrastructure.presentation.models;
 
 import com.astrobookings.domain.models.BusinessErrorCode;
 import com.astrobookings.domain.models.BusinessException;

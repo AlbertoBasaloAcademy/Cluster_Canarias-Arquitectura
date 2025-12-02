@@ -1,4 +1,4 @@
-package com.astrobookings.domain.ports;
+package com.astrobookings.domain.ports.input;
 
 import java.io.IOException;
 import java.util.List;

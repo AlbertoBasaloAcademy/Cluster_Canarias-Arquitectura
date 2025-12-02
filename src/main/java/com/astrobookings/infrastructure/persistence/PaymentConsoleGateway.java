@@ -1,6 +1,6 @@
-package com.astrobookings.infrastructure;
+package com.astrobookings.infrastructure.persistence;
 
-import com.astrobookings.domain.ports.PaymentGateway;
+import com.astrobookings.domain.ports.output.PaymentGateway;
 
 public class PaymentConsoleGateway implements PaymentGateway {
   public String processPayment(double amount) throws Exception {

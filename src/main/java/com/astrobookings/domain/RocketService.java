@@ -6,20 +6,21 @@ import com.astrobookings.domain.models.BusinessErrorCode;
 import com.astrobookings.domain.models.BusinessException;
 import com.astrobookings.domain.models.CreateRocketCommand;
 import com.astrobookings.domain.models.Rocket;
-import com.astrobookings.domain.ports.RocketRepository;
+import com.astrobookings.domain.ports.input.RocketsUseCases;
+import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class RocketService {
+public class RocketService implements RocketsUseCases {
   private final RocketRepository rocketRepository;
 
   public RocketService(RocketRepository rocketRepository) {
     this.rocketRepository = rocketRepository;
   }
 
-  public List<Rocket> getAll() {
+  public List<Rocket> getAllRockets() {
     return rocketRepository.findAll();
   }
 
-  public Rocket create(CreateRocketCommand command) {
+  public Rocket saveRocket(CreateRocketCommand command) {
     validate(command);
 
     Rocket rocket = new Rocket();

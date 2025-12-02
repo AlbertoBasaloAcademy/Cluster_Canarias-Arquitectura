@@ -1,19 +1,22 @@
-package com.astrobookings.presentation;
+package com.astrobookings.infrastructure.presentation;
 
 import java.io.IOException;
 
-import com.astrobookings.domain.RocketService;
 import com.astrobookings.domain.models.CreateRocketCommand;
-import com.astrobookings.infrastructure.InfrastructureAdapterFactory;
+import com.astrobookings.domain.ports.input.RocketsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
-public class RocketHandler extends BaseHandler implements RocketsUseCases {
-  private final RocketService rocketService;
+public class RocketHandler extends BaseHandler {
+  // private final RocketService rocketService;
+  private final RocketsUseCases rocketsUseCases;
   private HttpExchange exchange;
 
-  public RocketHandler() {
-    this.rocketService = new RocketService(InfrastructureAdapterFactory.getRocketRepository());
+  public RocketHandler(RocketsUseCases rocketsUseCases) {
+    // this.rocketService = null;
+    // this.rocketService = new
+    // RocketService(InfrastructureAdapterFactory.getRocketRepository());
+    this.rocketsUseCases = rocketsUseCases;
   }
 
   @Override
@@ -31,7 +34,7 @@ public class RocketHandler extends BaseHandler implements RocketsUseCases {
 
   public void getAllRockets() throws IOException {
     try {
-      sendJsonResponse(this.exchange, 200, rocketService.getAll());
+      sendJsonResponse(this.exchange, 200, rocketsUseCases.getAllRockets());
     } catch (Exception e) {
       handleException(exchange, e);
     }
@@ -42,7 +45,7 @@ public class RocketHandler extends BaseHandler implements RocketsUseCases {
       JsonNode jsonNode = readJsonBody(exchange);
       CreateRocketCommand command = mapCreateRocket(jsonNode);
 
-      var saved = rocketService.create(command);
+      var saved = rocketsUseCases.saveRocket(command);
       sendJsonResponse(exchange, 201, saved);
     } catch (Exception e) {
       handleException(exchange, e);
