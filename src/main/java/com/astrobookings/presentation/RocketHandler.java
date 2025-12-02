@@ -8,8 +8,9 @@ import com.astrobookings.infrastructure.InfrastructureAdapterFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
-public class RocketHandler extends BaseHandler {
+public class RocketHandler extends BaseHandler implements RocketsUseCases {
   private final RocketService rocketService;
+  private HttpExchange exchange;
 
   public RocketHandler() {
     this.rocketService = new RocketService(InfrastructureAdapterFactory.getRocketRepository());
@@ -18,9 +19,9 @@ public class RocketHandler extends BaseHandler {
   @Override
   public void handle(HttpExchange exchange) throws IOException {
     String method = exchange.getRequestMethod();
-
+    this.exchange = exchange;
     if ("GET".equals(method)) {
-      handleGet(exchange);
+      getAllRockets();
     } else if ("POST".equals(method)) {
       handlePost(exchange);
     } else {
@@ -28,9 +29,9 @@ public class RocketHandler extends BaseHandler {
     }
   }
 
-  private void handleGet(HttpExchange exchange) throws IOException {
+  public void getAllRockets() throws IOException {
     try {
-      sendJsonResponse(exchange, 200, rocketService.getAll());
+      sendJsonResponse(this.exchange, 200, rocketService.getAll());
     } catch (Exception e) {
       handleException(exchange, e);
     }
