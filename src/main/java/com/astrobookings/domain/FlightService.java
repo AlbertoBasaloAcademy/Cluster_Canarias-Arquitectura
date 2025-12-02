@@ -9,6 +9,8 @@ import com.astrobookings.domain.models.CreateFlightCommand;
 import com.astrobookings.domain.models.Flight;
 import com.astrobookings.domain.models.FlightStatus;
 import com.astrobookings.domain.models.Rocket;
+import com.astrobookings.domain.ports.FlightRepository;
+import com.astrobookings.domain.ports.RocketRepository;
 
 public class FlightService {
   private final FlightRepository flightRepository;

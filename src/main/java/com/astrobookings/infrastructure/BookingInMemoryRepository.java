@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.astrobookings.domain.models.Booking;
-import com.astrobookings.domain.BookingRepository;
+import com.astrobookings.domain.ports.BookingRepository;
 
 public class BookingInMemoryRepository implements BookingRepository {
   private static final Map<String, Booking> bookings = new HashMap<>();

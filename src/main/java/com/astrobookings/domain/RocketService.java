@@ -6,6 +6,7 @@ import com.astrobookings.domain.models.BusinessErrorCode;
 import com.astrobookings.domain.models.BusinessException;
 import com.astrobookings.domain.models.CreateRocketCommand;
 import com.astrobookings.domain.models.Rocket;
+import com.astrobookings.domain.ports.RocketRepository;
 
 public class RocketService {
   private final RocketRepository rocketRepository;
