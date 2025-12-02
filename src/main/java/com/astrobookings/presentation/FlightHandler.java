@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.astrobookings.business.FlightService;
-import com.astrobookings.business.models.BusinessErrorCode;
-import com.astrobookings.business.models.BusinessException;
 import com.astrobookings.business.models.CreateFlightCommand;
 import com.astrobookings.persistence.RepositoryFactory;
 import com.astrobookings.persistence.models.Flight;
@@ -57,14 +55,7 @@ public class FlightHandler extends BaseHandler {
     String rocketId = requireText(node, "rocketId");
     LocalDateTime departureDate = parseDate(requireText(node, "departureDate"));
     double basePrice = requireDouble(node, "basePrice");
-    Integer minPassengers = null;
-    if (node.has("minPassengers") && !node.get("minPassengers").isNull()) {
-      JsonNode minNode = node.get("minPassengers");
-      if (!minNode.canConvertToInt()) {
-        throw new BusinessException(BusinessErrorCode.VALIDATION, "Field 'minPassengers' must be an integer");
-      }
-      minPassengers = minNode.asInt();
-    }
+    Integer minPassengers = requireInt(node, "minPassengers");
     return new CreateFlightCommand(rocketId, departureDate, basePrice, minPassengers);
   }
 }

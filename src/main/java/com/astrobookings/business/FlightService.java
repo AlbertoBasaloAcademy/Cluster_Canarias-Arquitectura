@@ -43,17 +43,11 @@ public class FlightService {
   }
 
   private void validateFlight(Flight flight) {
-    if (flight.getRocketId() == null || flight.getRocketId().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Rocket ID must be provided");
-    }
-    if (flight.getDepartureDate() == null) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date must be provided");
-    }
     if (flight.getBasePrice() <= 0) {
       throw new BusinessException(BusinessErrorCode.VALIDATION, "Base price must be positive");
     }
-    if (flight.getMinPassengers() <= 0) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Min passengers must be positive");
+    if (flight.getMinPassengers() <= 0 || flight.getMinPassengers() > 10) {
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Min passengers must be between 1 and 10");
     }
 
     Rocket rocket = rocketRepository.findById(flight.getRocketId());

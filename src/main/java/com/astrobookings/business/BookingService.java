@@ -32,13 +32,6 @@ public class BookingService {
   }
 
   public Booking createBooking(CreateBookingCommand command) {
-    if (command.flightId() == null || command.flightId().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Flight ID must be provided");
-    }
-    if (command.passengerName() == null || command.passengerName().isBlank()) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Passenger name must be provided");
-    }
-
     Flight flight = flightRepository.findById(command.flightId());
     if (flight == null) {
       throw new BusinessException(BusinessErrorCode.NOT_FOUND, "Flight not found");

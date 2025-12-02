@@ -48,7 +48,7 @@ public class RocketHandler extends BaseHandler {
   private CreateRocketCommand mapCreateRocket(JsonNode jsonNode) {
     String name = requireText(jsonNode, "name");
     int capacity = requireInt(jsonNode, "capacity");
-    Double speed = jsonNode.hasNonNull("speed") ? jsonNode.get("speed").asDouble() : null;
+    Double speed = requireDouble(jsonNode, "speed");
     return new CreateRocketCommand(name, capacity, speed);
   }
 }
