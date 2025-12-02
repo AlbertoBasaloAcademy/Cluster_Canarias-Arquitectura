@@ -55,7 +55,7 @@ public class FlightHandler extends BaseHandler {
     String rocketId = requireText(node, "rocketId");
     LocalDateTime departureDate = parseDate(requireText(node, "departureDate"));
     double basePrice = requireDouble(node, "basePrice");
-    Integer minPassengers = requireInt(node, "minPassengers");
+    Integer minPassengers = shouldBeInt(node, "minPassengers", 0);
     return new CreateFlightCommand(rocketId, departureDate, basePrice, minPassengers);
   }
 }

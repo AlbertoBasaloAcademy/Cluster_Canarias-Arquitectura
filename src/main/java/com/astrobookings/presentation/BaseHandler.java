@@ -83,6 +83,17 @@ public abstract class BaseHandler implements HttpHandler {
     return value.asInt();
   }
 
+  protected int shouldBeInt(JsonNode node, String fieldName, int defaultValue) {
+    JsonNode value = node.get(fieldName);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    if (!value.canConvertToInt()) {
+      throw new BusinessException(BusinessErrorCode.VALIDATION, "Field '" + fieldName + "' must be an integer");
+    }
+    return value.asInt();
+  }
+
   protected double requireDouble(JsonNode node, String fieldName) {
     JsonNode value = node.get(fieldName);
     if (value == null || value.isNull() || !value.isNumber()) {

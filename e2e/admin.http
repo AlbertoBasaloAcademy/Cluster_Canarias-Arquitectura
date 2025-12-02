@@ -33,7 +33,7 @@ POST http://localhost:8080/flights
 Content-Type: application/json
 
 {
-  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "rocketId": "r1",
   "departureDate": "{{$datetime iso8601 6 d}}",
   "basePrice": 5000.0
 }
@@ -125,7 +125,7 @@ POST http://localhost:8080/flights
 Content-Type: application/json
 
 {
-  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "rocketId": "r1",
   "departureDate": "{{$datetime iso8601 6 d}}",
   "basePrice": 4000.0
 }
@@ -145,7 +145,7 @@ POST http://localhost:8080/flights
 Content-Type: application/json
 
 {
-  "rocketId": "00000000-0000-0000-0000-000000000001",
+  "rocketId": "r1",
   "departureDate": "{{$datetime iso8601 8 d}}",
   "basePrice": 4000.0
 }

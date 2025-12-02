@@ -15,6 +15,7 @@ import com.astrobookings.persistence.models.Rocket;
 public class FlightService {
   private final FlightRepository flightRepository;
   private final RocketRepository rocketRepository;
+  private static final int DEFAULT_MIN_PASSENGERS = 5;
 
   public FlightService(FlightRepository flightRepository, RocketRepository rocketRepository) {
     this.flightRepository = flightRepository;
@@ -35,7 +36,7 @@ public class FlightService {
     flight.setDepartureDate(command.departureDate());
     flight.setBasePrice(command.basePrice());
     flight.setStatus(FlightStatus.SCHEDULED);
-    flight.setMinPassengers(command.minPassengers() == null ? 5 : command.minPassengers());
+    flight.setMinPassengers(Math.max(command.minPassengers(), DEFAULT_MIN_PASSENGERS));
 
     validateFlight(flight);
 

@@ -13,7 +13,7 @@ public class RocketInMemoryRepository implements RocketRepository {
 
   static {
     // Pre-load one rocket
-    var rocketId = "00000000-0000-0000-0000-000000000001";
+    var rocketId = "r1";
     Rocket falcon9 = new Rocket(rocketId, "Falcon 9", 7, 27000.0);
     rockets.put(rocketId, falcon9);
     nextId = 2;
