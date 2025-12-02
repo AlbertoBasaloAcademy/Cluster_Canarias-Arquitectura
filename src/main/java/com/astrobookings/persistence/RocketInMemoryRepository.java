@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.astrobookings.persistence.models.Rocket;
 
-public class RocketRepositoryImpl implements RocketRepository {
+public class RocketInMemoryRepository implements RocketRepository {
   private static final Map<String, Rocket> rockets = new HashMap<>();
   private static int nextId = 1;
 

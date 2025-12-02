@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import com.astrobookings.persistence.models.Flight;
 import com.astrobookings.persistence.models.FlightStatus;
 
-public class FlightRepositoryImpl implements FlightRepository {
+public class FlightInMemoryRepository implements FlightRepository {
   private static final Map<String, Flight> flights = new HashMap<>();
   private static int nextId = 1;
 

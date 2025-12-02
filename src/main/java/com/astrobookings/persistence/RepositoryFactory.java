@@ -1,9 +1,9 @@
 package com.astrobookings.persistence;
 
 public class RepositoryFactory {
-  private static final RocketRepository rocketRepository = new RocketRepositoryImpl();
-  private static final FlightRepository flightRepository = new FlightRepositoryImpl();
-  private static final BookingRepository bookingRepository = new BookingRepositoryImpl();
+  private static final RocketRepository rocketRepository = new RocketInMemoryRepository();
+  private static final FlightRepository flightRepository = new FlightInMemoryRepository();
+  private static final BookingRepository bookingRepository = new BookingInMemoryRepository();
 
   public static RocketRepository getRocketRepository() {
     return rocketRepository;

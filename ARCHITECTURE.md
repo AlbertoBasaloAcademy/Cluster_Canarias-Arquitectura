@@ -60,46 +60,41 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 
 ### Capas y Componentes:
 
-Se ha refactorizado la aplicación para utilizar **Interfaces** y **Factorías**, desacoplando las implementaciones concretas de las capas superiores.
+La aplicación utiliza una arquitectura en capas con interfaces para infraestructura y persistencia, y clases concretas para servicios.
 
 - **presentation**: 
-  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Dependen de interfaces de servicio (`RocketService`, `FlightService`, etc.) y obtienen las instancias a través de `ServiceFactory`.
+  - **HTTP handlers**: (RocketHandler, FlightHandler, BookingHandler, AdminHandler). Instancian directamente los servicios concretos con sus dependencias.
   - **HTTP response models**: (ErrorResponse).
 
 - **business**: 
-  - **Interfaces de Servicio**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Definen los contratos de la lógica de negocio.
-  - **Implementaciones de Servicio**: (`FlightServiceImpl`, `BookingServiceImpl`, etc.). Implementan la lógica y dependen de interfaces de repositorio y gateways.
-  - **Interfaces de Infraestructura**: (`PaymentGateway`, `NotificationService`).
-  - **Implementaciones de Infraestructura**: (`PaymentGatewayImpl`, `NotificationServiceImpl`).
-  - **Factorías**:
-    - `ServiceFactory`: Provee instancias de servicios.
-    - `InfrastructureFactory`: Provee instancias de gateways/infraestructura.
+  - **Servicios**: (`FlightService`, `BookingService`, `RocketService`, `CancellationService`). Clases concretas que implementan la lógica de negocio y dependen de interfaces de repositorio y clases concretas de infraestructura.
+  - **Infraestructura**: (`PaymentGateway`, `NotificationService`). Clases concretas para gateways/infraestructura.
   - **DTOs y Excepciones**: (CreateRocketCommand, ValidationException, etc.).
 
 - **persistence**: 
   - **Interfaces de Repositorio**: (`RocketRepository`, `FlightRepository`, `BookingRepository`).
-  - **Implementaciones de Repositorio**: (`RocketRepositoryImpl`, etc.). Implementaciones en memoria.
+  - **Implementaciones de Repositorio**: (`RocketInMemoryRepository`, etc.). Implementaciones en memoria.
   - **Factorías**:
     - `RepositoryFactory`: Provee instancias de repositorios.
   - **Data models**: (Rocket, Flight, Booking, FlightStatus).
 
 ## Flujo de Datos y Dependencias
 
-El flujo de control va de arriba hacia abajo (Presentation -> Business -> Persistence), pero las dependencias de código apuntan hacia las abstracciones (Interfaces).
+El flujo de control va de arriba hacia abajo (Presentation -> Business -> Persistence), con dependencias directas a clases concretas en servicios y abstracciones en infraestructura y persistencia.
 
 ### Crear Reserva (POST /bookings)
 ```
 Presentation Layer
   └─ BookingHandler
-       ↓ (usa ServiceFactory para obtener BookingService)
-     Business Layer (Interface: BookingService)
-       └─ BookingServiceImpl
-            ├─ PaymentGateway (Interface) -> PaymentGatewayImpl
-            └─ NotificationService (Interface) -> NotificationServiceImpl
+       ↓ (instancia directamente BookingService con dependencias)
+     Business Layer (Clase: BookingService)
+       └─ BookingService
+            ├─ PaymentGateway (Clase) -> PaymentGateway
+            └─ NotificationService (Clase) -> NotificationService
                  ↓
                Persistence Layer (Interface: BookingRepository, FlightRepository)
-                 ├─ BookingRepositoryImpl (save booking)
-                 └─ FlightRepositoryImpl (update flight status)
+                 ├─ BookingInMemoryRepository (save booking)
+                 └─ FlightInMemoryRepository (update flight status)
                       ↓
                     Model Layer
                       ├─ Booking (with paymentTransactionId)
@@ -110,15 +105,15 @@ Presentation Layer
 ```
 Presentation Layer
   └─ AdminHandler
-       ↓ (usa ServiceFactory para obtener CancellationService)
-     Business Layer (Interface: CancellationService)
-       └─ CancellationServiceImpl
-            ├─ PaymentGateway (Interface) -> PaymentGatewayImpl
-            └─ NotificationService (Interface) -> NotificationServiceImpl
+       ↓ (instancia directamente CancellationService con dependencias)
+     Business Layer (Clase: CancellationService)
+       └─ CancellationService
+            ├─ PaymentGateway (Clase) -> PaymentGateway
+            └─ NotificationService (Clase) -> NotificationService
                  ↓
                Persistence Layer (Interface: FlightRepository, BookingRepository)
-                 ├─ FlightRepositoryImpl (find & update to CANCELLED)
-                 └─ BookingRepositoryImpl (get bookings for refunds)
+                 ├─ FlightInMemoryRepository (find & update to CANCELLED)
+                 └─ BookingInMemoryRepository (get bookings for refunds)
                       ↓
                     Model Layer
                       ├─ Flight (status: SCHEDULED → CANCELLED)
