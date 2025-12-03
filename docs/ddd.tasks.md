@@ -1,6 +1,6 @@
 # DDD Subdominios - Plan de Implementación
 
-**Objetivo**: Reorganizar el código en dos subdominios (Sales y Operations) manteniendo la funcionalidad actual.
+**Objetivo**: Reorganizar el código en dos subdominios (Sales y Fleet) manteniendo la funcionalidad actual.
 
 **Tiempo estimado**: 1 hora
 
@@ -8,9 +8,9 @@
 
 - [ ] Crear estructura de carpetas (5 min)
 - [ ] Mover Shared Kernel (5 min)
-- [ ] Mover Operations - Modelos (10 min)
-- [ ] Mover Operations - Puertos y Servicios (10 min)
-- [ ] Mover Operations - Infraestructura (10 min)
+- [ ] Mover Fleet - Modelos (10 min)
+- [ ] Mover Fleet - Puertos y Servicios (10 min)
+- [ ] Mover Fleet - Infraestructura (10 min)
 - [ ] Mover Sales - Dominio (10 min)
 - [ ] Mover Sales - Infraestructura (5 min)
 - [ ] Actualizar Config y Factories (5 min)
@@ -39,7 +39,7 @@ src/main/java/com/astrobookings/
 │   └── infrastructure/
 │       ├── persistence/
 │       └── presentation/
-└── operations/
+└── fleet/
     ├── domain/
     │   ├── models/
     │   ├── services/
@@ -48,6 +48,7 @@ src/main/java/com/astrobookings/
     │       └── output/
     └── infrastructure/
         ├── persistence/
+        └── presentation/
         └── presentation/
 ```
 
@@ -63,32 +64,32 @@ Actualizar package: `com.astrobookings.shared.models`
 
 ---
 
-### 3. Mover contexto Operations - Modelos (10 min)
+### 3. Mover contexto Fleet - Modelos (10 min)
 
-Mover a `operations/domain/models/`:
+Mover a `fleet/domain/models/`:
 - `Rocket.java`
 - `CreateRocketCommand.java`
 - `Flight.java`
 - `FlightStatus.java`
 - `CreateFlightCommand.java`
 
-Actualizar package: `com.astrobookings.operations.domain.models`
+Actualizar package: `com.astrobookings.fleet.domain.models`
 
 ---
 
-### 4. Mover contexto Operations - Puertos y Servicios (10 min)
+### 4. Mover contexto Fleet - Puertos y Servicios (10 min)
 
-Mover a `operations/domain/ports/input/`:
+Mover a `fleet/domain/ports/input/`:
 - `RocketsUseCases.java`
 - `FlightsUseCases.java`
 - `CancellationUseCases.java`
 
-Mover a `operations/domain/ports/output/`:
+Mover a `fleet/domain/ports/output/`:
 - `RocketRepository.java`
 - `FlightRepository.java`
 - `NotificationService.java`
 
-Mover a `operations/domain/services/`:
+Mover a `fleet/domain/services/`:
 - `RocketsService.java`
 - `FlightsService.java`
 - `CancellationService.java`
@@ -97,14 +98,14 @@ Actualizar packages correspondientes.
 
 ---
 
-### 5. Mover contexto Operations - Infraestructura (10 min)
+### 5. Mover contexto Fleet - Infraestructura (10 min)
 
-Mover a `operations/infrastructure/persistence/`:
+Mover a `fleet/infrastructure/persistence/`:
 - `RocketInMemoryRepository.java`
 - `FlightInMemoryRepository.java`
 - `NotificationConsoleService.java`
 
-Mover a `operations/infrastructure/presentation/`:
+Mover a `fleet/infrastructure/presentation/`:
 - `RocketsHandler.java`
 - `FlightsHandler.java`
 - `AdminHandler.java`
@@ -201,7 +202,7 @@ src/main/java/com/astrobookings/
 │       │   └── PaymentConsoleGateway.java
 │       └── presentation/
 │           └── BookingsHandler.java
-└── operations/
+└── fleet/
     ├── domain/
     │   ├── models/
     │   │   ├── Flight.java

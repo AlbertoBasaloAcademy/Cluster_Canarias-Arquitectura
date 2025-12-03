@@ -2,33 +2,33 @@
 
 ## Problema Actual: Acoplamiento Directo
 
-En el código actual, **Sales escribe directamente en entidades de Operations**, violando los límites del bounded context.
+En el código actual, **Sales escribe directamente en entidades de Fleet**, violando los límites del bounded context.
 
 ### Punto de Acoplamiento 1: BookingsService modifica Flight
 
 ```java
 // BookingsService.java (Sales) - líneas 76-82
 if (currentBookings >= capacity) {
-  flight.setStatus(FlightStatus.SOLD_OUT);        // ❌ Sales escribe en Operations
+  flight.setStatus(FlightStatus.SOLD_OUT);        // ❌ Sales escribe en Fleet
 } else if (currentBookings >= flight.getMinPassengers()...) {
-  flight.setStatus(FlightStatus.CONFIRMED);       // ❌ Sales escribe en Operations
+  flight.setStatus(FlightStatus.CONFIRMED);       // ❌ Sales escribe en Fleet
 }
-flightRepository.save(flight);                    // ❌ Sales persiste entidad de Operations
+flightRepository.save(flight);                    // ❌ Sales persiste entidad de Fleet
 ```
 
-### Punto de Acoplamiento 2: Sales lee directamente de Operations
+### Punto de Acoplamiento 2: Sales lee directamente de Fleet
 
 ```java
 // BookingsService.java (Sales) - líneas 42-58
-Flight flight = flightRepository.findById(...);   // ❌ Acceso directo a Operations
-Rocket rocket = rocketRepository.findById(...);   // ❌ Acceso directo a Operations
-int capacity = rocket.getCapacity();              // ❌ Usa modelo de Operations
+Flight flight = flightRepository.findById(...);   // ❌ Acceso directo a Fleet
+Rocket rocket = rocketRepository.findById(...);   // ❌ Acceso directo a Fleet
+int capacity = rocket.getCapacity();              // ❌ Usa modelo de Fleet
 ```
 
 ### Punto de Acoplamiento 3: CancellationService cruza dominios
 
 ```java
-// CancellationService.java (Operations)
+// CancellationService.java (Fleet)
 List<Booking> bookings = bookingRepository.findByFlightId(...);  // ❌ Lee de Sales
 paymentGateway.processRefund(...);                               // ❌ Usa servicio de Sales
 ```
@@ -47,7 +47,7 @@ La forma más sencilla de desacoplar sin introducir eventos de dominio es crear 
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   ┌───────────────┐                     ┌───────────────┐      │
-│   │   OPERATIONS  │                     │     SALES     │      │
+│   │     FLEET     │                     │     SALES     │      │
 │   │               │                     │               │      │
 │   │ FlightStatus  │◄─── consulta ───────│ BookingsService│     │
 │   │   UseCases    │     availability    │               │      │
@@ -67,12 +67,12 @@ La forma más sencilla de desacoplar sin introducir eventos de dominio es crear 
 
 ## Implementación
 
-### 1. Puerto de Operations para Sales (consulta disponibilidad)
+### 1. Puerto de Fleet para Sales (consulta disponibilidad)
 
-Sales necesita saber si puede reservar en un vuelo. Operations expone esta información:
+Sales necesita saber si puede reservar en un vuelo. Fleet expone esta información:
 
 ```java
-// operations/domain/ports/input/FlightStatusUseCases.java
+// fleet/domain/ports/input/FlightStatusUseCases.java
 public interface FlightStatusUseCases {
     
     /**
@@ -83,16 +83,16 @@ public interface FlightStatusUseCases {
     
     /**
      * Notifica que se ha creado una reserva.
-     * Operations actualiza el estado del vuelo si corresponde.
+     * Fleet actualiza el estado del vuelo si corresponde.
      */
     void onBookingCreated(String flightId);
 }
 ```
 
-### 2. Value Object de disponibilidad (Shared o en Operations)
+### 2. Value Object de disponibilidad (Shared o en Fleet)
 
 ```java
-// operations/domain/models/FlightAvailability.java
+// fleet/domain/models/FlightAvailability.java
 public record FlightAvailability(
     String flightId,
     double basePrice,
@@ -116,10 +116,10 @@ public record FlightAvailability(
 }
 ```
 
-### 3. Servicio de Operations que implementa el puerto
+### 3. Servicio de Fleet que implementa el puerto
 
 ```java
-// operations/domain/services/FlightStatusService.java
+// fleet/domain/services/FlightStatusService.java
 public class FlightStatusService implements FlightStatusUseCases {
     
     private final FlightRepository flightRepository;
@@ -168,9 +168,9 @@ public class FlightStatusService implements FlightStatusUseCases {
 }
 ```
 
-### 4. Puerto de Sales para Operations (consulta reservas)
+### 4. Puerto de Sales para Fleet (consulta reservas)
 
-Operations necesita saber cuántas reservas hay para un vuelo:
+Fleet necesita saber cuántas reservas hay para un vuelo:
 
 ```java
 // sales/domain/ports/input/BookingQueryPort.java
@@ -178,13 +178,13 @@ public interface BookingQueryPort {
     
     /**
      * Cuenta las reservas de un vuelo.
-     * Operations usa esto para determinar estados.
+     * Fleet usa esto para determinar estados.
      */
     int countByFlightId(String flightId);
     
     /**
      * Lista las reservas de un vuelo.
-     * Operations usa esto para procesar reembolsos.
+     * Fleet usa esto para procesar reembolsos.
      */
     List<BookingInfo> findByFlightId(String flightId);
 }
@@ -206,7 +206,7 @@ public class BookingsService implements BookingsUseCases {
     
     private final BookingRepository bookingRepository;
     private final PaymentGateway paymentGateway;
-    private final FlightStatusUseCases flightStatus;  // Puerto hacia Operations
+    private final FlightStatusUseCases flightStatus;  // Puerto hacia Fleet
     
     public Booking createBooking(CreateBookingCommand command) {
         // 1. Consultar disponibilidad a Operations
@@ -270,15 +270,15 @@ public class Config {
         PaymentGateway paymentGw = new PaymentConsoleGateway();
         NotificationService notificationSvc = new NotificationConsoleService();
         
-        // Puerto de Sales para Operations
+        // Puerto de Sales para Fleet
         BookingQueryPort bookingQuery = new BookingQueryAdapter(bookingRepo);
         
-        // Servicio de Operations (necesita puerto de Sales)
+        // Servicio de Fleet (necesita puerto de Sales)
         FlightStatusUseCases flightStatus = new FlightStatusService(
             flightRepo, rocketRepo, bookingQuery, notificationSvc
         );
         
-        // Servicio de Sales (necesita puerto de Operations)
+        // Servicio de Sales (necesita puerto de Fleet)
         BookingsUseCases bookings = new BookingsService(
             bookingRepo, paymentGw, flightStatus
         );
@@ -292,13 +292,13 @@ public class Config {
 
 ## Resumen de Cambios
 
-| Antes (Acoplado)                        | Después (Desacoplado)                              |
-| --------------------------------------- | -------------------------------------------------- |
-| Sales accede a `FlightRepository`       | Sales usa `FlightStatusUseCases.getAvailability()` |
-| Sales accede a `RocketRepository`       | Datos incluidos en `FlightAvailability`            |
-| Sales modifica `Flight.status`          | Sales llama `flightStatus.onBookingCreated()`      |
-| Sales persiste `Flight`                 | Operations gestiona sus propias entidades          |
-| Operations accede a `BookingRepository` | Operations usa `BookingQueryPort`                  |
+| Antes (Acoplado)                   | Después (Desacoplado)                              |
+| ---------------------------------- | -------------------------------------------------- |
+| Sales accede a `FlightRepository`  | Sales usa `FlightStatusUseCases.getAvailability()` |
+| Sales accede a `RocketRepository`  | Datos incluidos en `FlightAvailability`            |
+| Sales modifica `Flight.status`     | Sales llama `flightStatus.onBookingCreated()`      |
+| Sales persiste `Flight`            | Fleet gestiona sus propias entidades               |
+| Fleet accede a `BookingRepository` | Fleet usa `BookingQueryPort`                       |
 
 ---
 
@@ -320,7 +320,7 @@ Para mayor desacoplamiento, se podrían introducir eventos:
 // Evento publicado por Sales
 public record BookingCreatedEvent(String flightId, String bookingId) {}
 
-// Evento publicado por Operations  
+// Evento publicado por Fleet  
 public record FlightConfirmedEvent(String flightId, int passengers) {}
 public record FlightCancelledEvent(String flightId, List<String> bookingIds) {}
 ```

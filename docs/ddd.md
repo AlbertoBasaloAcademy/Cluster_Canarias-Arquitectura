@@ -9,7 +9,7 @@ El análisis del código revela una estructura modular con arquitectura hexagona
    - Responsabilidades: reservas, cálculo de descuentos, control de capacidad, procesamiento de pagos
    - Servicios actuales involucrados: `BookingsService`
 
-2. **✈️ Operations (Operaciones)** - Subdominio Core
+2. **🚀 Fleet (Flota)** - Subdominio Core
    - Entidades: `Flight`, `Rocket`, `FlightStatus`
    - Responsabilidades: gestión de flota, programación de vuelos, ciclo de vida de vuelos, cancelaciones
    - Servicios actuales involucrados: `RocketsService`, `FlightsService`, `CancellationService`
@@ -45,7 +45,7 @@ src/main/java/com/astrobookings/
 │       └── presentation/
 │           └── BookingsHandler.java
 │
-├── operations/                      # Bounded Context: Operaciones
+├── fleet/                           # Bounded Context: Flota
 │   ├── domain/
 │   │   ├── models/
 │   │   │   ├── Flight.java
@@ -106,7 +106,7 @@ src/main/java/com/astrobookings/
 
 ---
 
-### ✈️ Operations Context (Operaciones)
+### 🚀 Fleet Context (Flota)
 
 | Inglés             | Español           | Definición                                                           |
 | ------------------ | ----------------- | -------------------------------------------------------------------- |
@@ -120,7 +120,7 @@ src/main/java/com/astrobookings/
 | **Confirmation**   | Confirmación      | Cambio de estado cuando se alcanza el mínimo de pasajeros            |
 | **Cancellation**   | Cancelación       | Terminación de un vuelo por reservas insuficientes                   |
 
-**Reglas de Negocio en Operations:**
+**Reglas de Negocio en Fleet:**
 1. **Rocket Capacity Limit**: 1-10 pasajeros por cohete
 2. **Flight Scheduling**: Fecha de salida debe ser futura (máximo 1 año)
 3. **Default Min Passengers**: Mínimo 5 pasajeros requeridos por defecto
@@ -133,14 +133,14 @@ src/main/java/com/astrobookings/
 
 ### Flight como Entidad Compartida
 
-| Atributo        | Contexto Propietario | Contexto Consumidor | Uso                                                      |
-| --------------- | -------------------- | ------------------- | -------------------------------------------------------- |
-| `id`            | Operations           | Sales               | Clave de referencia para reservas                        |
-| `rocketId`      | Operations           | Sales               | Para consultar capacidad                                 |
-| `departureDate` | Operations           | Sales               | Para calcular descuentos                                 |
-| `basePrice`     | Operations           | Sales               | Punto de partida para precio final                       |
-| `status`        | Operations           | **Ambos**           | Sales lee para validar, Operations gestiona transiciones |
-| `minPassengers` | Operations           | Sales               | Para regla de descuento y trigger de confirmación        |
+| Atributo        | Contexto Propietario | Contexto Consumidor | Uso                                                 |
+| --------------- | -------------------- | ------------------- | --------------------------------------------------- |
+| `id`            | Fleet                | Sales               | Clave de referencia para reservas                   |
+| `rocketId`      | Fleet                | Sales               | Para consultar capacidad                            |
+| `departureDate` | Fleet                | Sales               | Para calcular descuentos                            |
+| `basePrice`     | Fleet                | Sales               | Punto de partida para precio final                  |
+| `status`        | Fleet                | **Ambos**           | Sales lee para validar, Fleet gestiona transiciones |
+| `minPassengers` | Fleet                | Sales               | Para regla de descuento y trigger de confirmación   |
 
 ### Flujo Actual (Acoplamiento)
 
@@ -183,7 +183,7 @@ Esto crea **acoplamiento fuerte** entre contextos que debe resolverse.
 ├───────────────────────────────────────────────────────────────────┤
 │                                                                   │
 │   ┌─────────────────┐  Customer/Supplier  ┌─────────────────┐    │
-│   │   OPERATIONS    │ ◄────────────────── │     SALES       │    │
+│   │     FLEET       │ ◄────────────────── │     SALES       │    │
 │   │   (Upstream)    │                     │  (Downstream)   │    │
 │   │                 │     Conformist      │                 │    │
 │   │  • Flight       │ ──────────────────► │  • Booking      │    │
@@ -210,12 +210,12 @@ Esto crea **acoplamiento fuerte** entre contextos que debe resolverse.
 
 ### Relaciones entre Contextos
 
-| Relación              | Desde              | Hacia      | Patrón              | Justificación                                                      |
-| --------------------- | ------------------ | ---------- | ------------------- | ------------------------------------------------------------------ |
-| **Customer/Supplier** | Operations         | Sales      | Upstream/Downstream | Operations define el modelo Flight que Sales consume               |
-| **Shared Kernel**     | Operations ↔ Sales | Shared     | Modelo compartido   | `BusinessException`, `BusinessErrorCode` usados por ambos          |
-| **Conformist**        | Sales              | Operations | Adopta modelo       | Sales actualmente usa la entidad Flight de Operations directamente |
-| **Open Host Service** | Operations         | Externos   | API publicada       | `FlightsHandler`, `RocketsHandler` exponen endpoints REST          |
+| Relación              | Desde         | Hacia    | Patrón              | Justificación                                                 |
+| --------------------- | ------------- | -------- | ------------------- | ------------------------------------------------------------- |
+| **Customer/Supplier** | Fleet         | Sales    | Upstream/Downstream | Fleet define el modelo Flight que Sales consume               |
+| **Shared Kernel**     | Fleet ↔ Sales | Shared   | Modelo compartido   | `BusinessException`, `BusinessErrorCode` usados por ambos     |
+| **Conformist**        | Sales         | Fleet    | Adopta modelo       | Sales actualmente usa la entidad Flight de Fleet directamente |
+| **Open Host Service** | Fleet         | Externos | API publicada       | `FlightsHandler`, `RocketsHandler` exponen endpoints REST     |
 
 ---
 
@@ -236,38 +236,38 @@ public record FlightReference(
 ) {}
 ```
 
-Esto traduce desde la entidad `Flight` de Operations, protegiendo a Sales de cambios internos.
+Esto traduce desde la entidad `Flight` de Fleet, protegiendo a Sales de cambios internos.
 
 ### 2. Domain Events para Desacoplamiento
 
 ```
 ┌──────────────┐    BookingCreatedEvent    ┌──────────────┐
-│    SALES     │ ─────────────────────────►│  OPERATIONS  │
+│    SALES     │ ─────────────────────────►│    FLEET     │
 │              │                           │              │
 │              │◄───────────────────────── │              │
 └──────────────┘   FlightConfirmedEvent    └──────────────┘
                    FlightCancelledEvent
 ```
 
-- `BookingCreatedEvent` → Operations escucha para actualizar conteo de asientos
+- `BookingCreatedEvent` → Fleet escucha para actualizar conteo de asientos
 - `FlightConfirmedEvent` → Sales escucha para notificaciones
 - `FlightCancelledEvent` → Sales dispara reembolsos
 
 ### 3. Separar Ownership de Status
 
-- **Operations posee**: `SCHEDULED`, `CANCELLED`
-- **Sales dispara transiciones** vía eventos, **Operations las aplica**
+- **Fleet posee**: `SCHEDULED`, `CANCELLED`
+- **Sales dispara transiciones** vía eventos, **Fleet las aplica**
 
 ---
 
 ## Clasificación de Subdominios
 
-| Subdominio        | Tipo    | Justificación                                           |
-| ----------------- | ------- | ------------------------------------------------------- |
-| **Operations**    | Core    | Diferenciador del negocio: gestión de vuelos espaciales |
-| **Sales**         | Core    | Genera ingresos: reservas y pagos                       |
-| **Payments**      | Generic | Podría ser servicio externo (Stripe, PayPal)            |
-| **Notifications** | Generic | Podría ser servicio externo (SendGrid, SNS)             |
+| Subdominio        | Tipo    | Justificación                                        |
+| ----------------- | ------- | ---------------------------------------------------- |
+| **Fleet**         | Core    | Diferenciador del negocio: gestión de flota espacial |
+| **Sales**         | Core    | Genera ingresos: reservas y pagos                    |
+| **Payments**      | Generic | Podría ser servicio externo (Stripe, PayPal)         |
+| **Notifications** | Generic | Podría ser servicio externo (SendGrid, SNS)          |
 
 ---
 
