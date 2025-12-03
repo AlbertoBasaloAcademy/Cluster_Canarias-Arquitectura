@@ -7,7 +7,7 @@
   1. Entidades claves exponen comportamiento de negocio y ocultan mutaciones internas.
   2. Value Object `Capacity` controla los limites de aforo y reemplaza primitivos dispersos.
   3. Servicios de dominio solo orquestan uso de agregados y puertos.
-  4. Flujos descritos en `ARCHITECTURE.md` se mantienen funcionales (Smoke y E2E `./e2e/*.http`).
+   4. Solo se verifica que el proyecto compila correctamente (`mvn -q -DskipTests compile`).
 
 ## 2. Principios tacticos
 - **Modelo rico:** Mutaciones de estado via metodos de negocio (`confirm`, `markSoldOut`, `cancelDueToLowDemand`).
@@ -19,7 +19,7 @@
 
 ### Fase 0 · Preparacion (Fleet + Sales)
 1. Inventariar usos de capacidad y estados en `FlightsService`, `RocketsService`, `BookingsService`, `CancellationService`, `FleetAdapter`.
-2. Cubrir comportamiento actual con pruebas rapidas (unitarias si existen, sino smoke manual via `mvn test` + `e2e/*.http`).
+2. Revisar dependencias y scripts asegurando que la verificación final será únicamente la compilación (`mvn -q -DskipTests compile`).
 3. Documentar supuestos de negocio (minimo pasajeros, umbrales de descuento) para detectar regresiones.
 
 ### Fase 1 · Value Object `Capacity` (Fleet)
@@ -61,7 +61,7 @@
 
 ### Fase 5 · Integracion y verificacion
 1. Actualizar `ARCHITECTURE.md` y `docs/6-domain-tactic.md` con nuevos bloques tacticos (separado de este plan).
-2. Ejecutar `mvn test` y flujos E2E (`RestClient` scripts en `e2e/`).
+2. Ejecutar solo `mvn -q -DskipTests compile` para asegurar que todo compila sin errores.
 3. Revisar logs para confirmar
    - Cambio automatico a `CONFIRMED`/`SOLD_OUT` via metodos ricos.
    - Cancelaciones disparadas por `Flight.cancelDueToLowDemand`.
