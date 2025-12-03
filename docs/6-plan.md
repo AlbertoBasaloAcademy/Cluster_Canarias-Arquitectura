@@ -1,129 +1,78 @@
-# 6. Plan de refactor DDD táctico
+# 6 Tactical Refactor Plan
 
-Plan de implementación para pasar del modelo anémico actual a un modelo rico en el dominio de AstroBookings, alineado con `ARCHITECTURE.md` y el guion `6-domain-tactic.md`.
+## 1. Contexto y objetivos
+- **Situacion actual:** El modelo de dominio descrito en `ARCHITECTURE.md` y el codigo bajo `src/main/java/com/astrobookings` mantiene entidades anemicas (`Flight`, `Rocket`, `Booking`) y servicios con reglas mezcladas.
+- **Objetivo:** Aplicar el guion de `docs/6-domain-tactic.md` para evolucionar los bounded contexts Fleet y Sales hacia un modelo rico que encapsule invariantes, reduzca duplicidad y prepare la extraccion de modulos Maven independientes.
+- **Criterios de exito:**
+  1. Entidades claves exponen comportamiento de negocio y ocultan mutaciones internas.
+  2. Value Object `Capacity` controla los limites de aforo y reemplaza primitivos dispersos.
+  3. Servicios de dominio solo orquestan uso de agregados y puertos.
+  4. Flujos descritos en `ARCHITECTURE.md` se mantienen funcionales (Smoke y E2E `./e2e/*.http`).
 
-## 1. Estado actual y objetivos
+## 2. Principios tacticos
+- **Modelo rico:** Mutaciones de estado via metodos de negocio (`confirm`, `markSoldOut`, `cancelDueToLowDemand`).
+- **Value Objects:** Uso de tipos especificos para invariantes compartidas (`Capacity`).
+- **Agregados consistentes:** Transacciones limitadas a una raiz (`Flight`, `Booking`).
+- **Servicios delgados:** Validaciones y reglas residir segun pertenece a entidad o VO.
 
-- Identificar dónde está hoy la lógica de negocio (principalmente en servicios de dominio) y qué entidades son solo "bolsas de datos".
-- Definir qué responsabilidades deben moverse a `Rocket`, `Flight`, `Booking` y a nuevos Value Objects.
-- Mantener la arquitectura hexagonal: servicios de dominio siguen implementando puertos de entrada y orquestan, pero no contienen toda la lógica.
+## 3. Roadmap de refactor
 
-## 2. Agregados e identificadores
+### Fase 0 · Preparacion (Fleet + Sales)
+1. Inventariar usos de capacidad y estados en `FlightsService`, `RocketsService`, `BookingsService`, `CancellationService`, `FleetAdapter`.
+2. Cubrir comportamiento actual con pruebas rapidas (unitarias si existen, sino smoke manual via `mvn test` + `e2e/*.http`).
+3. Documentar supuestos de negocio (minimo pasajeros, umbrales de descuento) para detectar regresiones.
 
-1. Confirmar agregados y límites:
-   - `Rocket` como agregado de Fleet.
-   - `Flight` como agregado de Fleet, con referencia a `Rocket` por ID.
-   - `Booking` como agregado de Sales, con referencia a `Flight` por ID.
-2. Introducir Value Objects de identificación en `domain/models`:
-   - `RocketId`, `FlightId`, `BookingId` (wrappers de `String`).
-3. Mantener referencias entre agregados siempre por ID, no por objeto.
+### Fase 1 · Value Object `Capacity` (Fleet)
+1. Crear `Capacity` dentro de `com.astrobookings.fleet.domain.models`.
+   - Reglas: rango 1..10 (segun servicios actuales), metodos `from(int raw)`, `ensureCanBoard(int currentPassengers)`, `maxPassengers()`.
+2. Reemplazar `int capacity` de `Rocket` por `Capacity`.
+   - Ajustar `CreateRocketCommand`, `RocketInMemoryRepository`, `RocketsService` y DTOs expuestos a handlers.
+3. Propagar `Capacity` hacia `Flight` (campo derivado via `rocketId`).
+   - Extender `Flight` para conocer su `Capacity` efectiva o exponerla via colaboracion `Rocket` en `FleetAdapter`.
+4. Validar que `FleetAdapter#getRocketCapacityForFlight` y `BookingsService` utilicen `Capacity` en lugar de enteros.
 
-## 3. Enriquecer entidades de Fleet
+### Fase 2 · Enriquecer `Flight` (Fleet)
+1. Transformar `Flight` en agregado con metodos:
+   - `confirmIfMinReached(int passengers)` → cambia a `CONFIRMED` y retorna boolean para notificacion.
+   - `markSoldOut()` → asegura transicion unica.
+   - `cancelDueToLowDemand(int currentPassengers, LocalDateTime cutoff)` → valida reglas comerciales.
+   - `canAcceptNewPassenger(Capacity capacity, int currentPassengers)` → encapsula chequeos previos a reserva.
+2. Despublicar setters que no aporten (mantener constructor privado + factory `Flight.schedule(...)`).
+3. Ajustar `FlightsService` para delegar validaciones de fechas y minimos a `Flight` (factory valida).
+4. Actualizar `FlightInMemoryRepository` y `FleetHandler` para trabajar con nuevo API (serializacion via getters especificos o DTOs).
 
-### 3.1. `Rocket`
+### Fase 3 · Enriquecer `Booking` (Sales)
+1. Introducir `BookingId` opcional (VO) o al menos factory estatica `Booking.create(flightId, passengerName, Money price, String transactionId)`.
+2. Logica dentro de `Booking` para:
+   - Validar precio positivo y pasajero no vacio.
+   - Exponer metodos de lectura inmutables (sin setters publicos).
+3. Ajustar `BookingRepository`, `BookingsHandler` y mapeos JSON.
 
-1. Añadir factoría estática `Rocket.create(...)` en `Rocket.java` que:
-   - Valide nombre no vacío.
-   - Valide capacidad en el rango permitido.
-2. Centralizar la validación de capacidad en `Rocket` y restringir setters:
-   - Evitar modificar capacidad sin pasar por reglas de dominio.
-3. Adaptar `RocketsService` para usar `Rocket.create(...)` en lugar de construir y validar manualmente.
+### Fase 4 · Afinar servicios de dominio
+1. **BookingsService**:
+   - Sustituir listas y contadores por consultas encapsuladas (`Capacity.ensureCanBoard` + `Flight.canAcceptNewPassenger`).
+   - Delegar calculo de descuentos en metodo privado o en nuevo VO `DiscountPolicy` (opcional si tiempo lo permite).
+   - Usar respuesta de `Flight.confirmIfMinReached` para disparar `notificationService.notifyConfirmation`.
+2. **CancellationService**:
+   - Utilizar `Flight.cancelDueToLowDemand` para centralizar condiciones de corte antes de actualizar estado.
+   - Encapsular refund/notification en metodos auxiliares para mantener claridad.
+3. **FlightsService / RocketsService**:
+   - Usar factories de entidades y Value Objects; eliminar setters.
 
-### 3.2. `Flight`
+### Fase 5 · Integracion y verificacion
+1. Actualizar `ARCHITECTURE.md` y `docs/6-domain-tactic.md` con nuevos bloques tacticos (separado de este plan).
+2. Ejecutar `mvn test` y flujos E2E (`RestClient` scripts en `e2e/`).
+3. Revisar logs para confirmar
+   - Cambio automatico a `CONFIRMED`/`SOLD_OUT` via metodos ricos.
+   - Cancelaciones disparadas por `Flight.cancelDueToLowDemand`.
+4. Preparar PR destacando como el nuevo modelo reduce acoplamiento y facilita paso a modulos Maven.
 
-1. Añadir factoría `Flight.create(...)` en `Flight.java` que valide:
-   - Fecha de salida futura y dentro del rango de negocio.
-   - Precio base > 0.
-   - `minPassengers` en el rango actual.
-   - Estado inicial `SCHEDULED`.
-2. Encapsular transiciones de estado:
-   - Hacer `setStatus(...)` privado o de paquete.
-   - Añadir métodos de negocio:
-     - `confirm(int currentPassengers)`.
-     - `cancelDueToLowDemand(int currentPassengers, LocalDate now)`.
-     - `markSoldOut()`.
-3. Mover a `Flight` las reglas hoy en `FlightsService` y `BookingsService` sobre:
-   - Cuándo pasa de `SCHEDULED` a `CONFIRMED`.
-   - Cuándo el vuelo se considera `SOLD_OUT`.
-   - Cuándo debe cancelarse por baja demanda.
-4. Introducir un VO de cantidad `Capacity` para encapsular el rango permitido de capacidad de los cohetes y reutilizarlo donde sea necesario.
+## 4. Riesgos y mitigaciones
+- **Serializacion JSON:** Cambios en getters/setters pueden romper Jackson. Mitigar con constructors sin-args + anotaciones `@JsonCreator` o DTOs en capa presentacion.
+- **Duplicacion de reglas:** Coordinar trabajos en Fleet y Sales para no reescribir invariantes (definir owner claro por agregado).
+- **Sincronizacion de ID y capacidad:** Al introducir `Capacity`, garantizar migracion de datos en repos in-memory para evitar nulls.
 
-## 4. Enriquecer entidades de Sales
-
-### 4.1. `Booking`
-
-1. Crear factoría `Booking.create(...)` en `Booking.java` que garantice:
-   - `flightId` válido (no nulo/ vacío) y coherente con el contexto.
-   - Datos de pasajero obligatorios.
-   - Precio positivo.
-   - Presencia de identificador de pago cuando el negocio lo requiera.
-2. Reducir/set restringir mutabilidad:
-   - Preferir campos finales + getters.
-   - Eliminar setters que permitan dejar reservas en estados inválidos.
-3. Añadir comportamiento de ciclo de vida:
-   - `markRefunded()` (o similar) para representar devoluciones.
-4. Opcional: introducir VOs como:
-   - `Money` para precios.
-   - `PassengerName` / `Passenger`.
-   - `PaymentTransactionId`.
-
-### 4.2. Política de descuentos y precios
-
-1. Analizar el cálculo de precio actual en `BookingsService`.
-2. Extraer una política de descuentos en el dominio:
-   - Interfaz o clase `DiscountPolicy` / `PricingService`.
-   - VO `DiscountContext` (fecha de vuelo, días restantes, ocupación, capacidad, precio base).
-3. Hacer que `BookingsService` delegue el cálculo de precio en esta política y luego llame a `Booking.create(...)`.
-
-## 5. Recentrar servicios de dominio
-
-### 5.1. `FlightsService`
-
-1. Usar `Flight.create(...)` para crear vuelos en lugar de construir con setters.
-2. Usar los nuevos métodos de negocio de `Flight` para cambiar estados:
-   - Confirmar vuelos.
-   - Marcar como llenos.
-   - Cancelar por baja demanda.
-3. Mantener responsabilidad de:
-   - Acceso a repositorios.
-   - Construcción de respuestas para los puertos de entrada.
-
-### 5.2. `BookingsService`
-
-1. Delegar en `Flight` la comprobación de disponibilidad/capacidad:
-   - Métodos como `canAcceptBooking(...)` o `reserveSeat(...)`.
-2. Delegar el cálculo de precio en la política de descuentos.
-3. Crear reservas con `Booking.create(...)` en lugar de setters dispersos.
-4. Mantener:
-   - Orquestación de repositorios (`FlightRepository`, `BookingRepository`).
-   - Interacción con `PaymentGateway` y `NotificationService`.
-
-### 5.3. `CancellationService`
-
-1. Delegar en `Flight` la decisión de cancelación:
-   - Usar `cancelDueToLowDemand(...)` o `shouldBeCancelled(...)`.
-2. Usar `Booking` para representar devoluciones:
-   - Llamar a `markRefunded()` (o similar) antes/después de invocar `PaymentGateway.refund(...)`.
-3. Mantener la orquestación entre agregados y puertos de salida.
-
-## 6. Transacciones, consistencia y eventos
-
-1. Revisar dónde se modifican `Flight` y `Booking` en el mismo flujo:
-   - Especialmente en `BookingsService` y `CancellationService`.
-2. Documentar estrategia de consistencia eventual para un futuro con BD real:
-   - Una transacción por agregado (regla del guion táctico).
-3. Definir eventos de dominio conceptuales:
-   - `FlightConfirmed`, `FlightCancelled`, `BookingCreated`, `BookingRefunded`.
-   - Usarlos como base para separar responsabilidades y futuros flujos asíncronos.
-
-## 7. Documentación y pruebas
-
-1. Actualizar `ARCHITECTURE.md` con una sección de "Modelo Rico":
-   - Responsabilidades de `Rocket`, `Flight`, `Booking`.
-   - Principales Value Objects.
-   - Distinción clara entre entidades con comportamiento y servicios orquestadores.
-2. Alinear `docs/6-domain-tactic.md` con los nombres concretos:
-   - Mencionar métodos como `Flight.confirm`, `Flight.cancelDueToLowDemand`, `Booking.create`, `DiscountPolicy`.
-3. Plan de pruebas:
-   - Añadir o adaptar tests de unidad para `Flight`, `Booking` y los servicios de dominio.
-   - Verificar que las invariantes se respetan y que el comportamiento observable (endpoints) se mantiene.
+## 5. Backlog extendido (post-plan)
+1. VO adicionales: `Money`, `PassengerName`, `FlightDate`.
+2. Eventos de dominio (`FlightConfirmed`, `BookingCreated`).
+3. Extraccion de modulos Maven para Fleet y Sales.
