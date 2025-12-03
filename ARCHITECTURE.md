@@ -2,7 +2,14 @@
 
 ## Introducción
 
-AstroBookings es una aplicación de reservas de viajes espaciales implementada con una arquitectura de puertos y adaptadores (hexagonal ligera). Los servicios de dominio solo dependen de puertos definidos en el propio dominio y las dependencias concretas se resuelven en infraestructura mediante adaptadores (repositorios en memoria y gateways de consola). Utiliza Java 21, JDK HTTP Server y Jackson para JSON. La base de datos es en memoria (HashMap).
+AstroBookings es una aplicación de reservas de viajes espaciales implementada con una **arquitectura hexagonal simplificada** (puertos y adaptadores). En esta versión no existe capa de aplicación separada: los servicios de dominio implementan directamente los puertos de entrada (use cases). Las dependencias concretas se resuelven mediante factories en infraestructura y se inyectan desde una clase `Config` central.
+
+El proyecto sigue una evolución arquitectónica a través de ramas:
+- **0-legacy**: Código monolítico inicial
+- **1-responsibility**: Separación por responsabilidades
+- **2-dependencies**: Inversión de dependencias
+- **3-ports-adapters**: Puertos y adaptadores básicos
+- **4-application** (actual): Puertos de entrada/salida + factories de configuración
 
 **Características principales**:
 - Gestión de cohetes, vuelos y reservas
@@ -47,23 +54,51 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 
 ```
 ├── src/main/java/com/astrobookings/
-│   ├── presentation/          # Adaptadores de entrada (HTTP handlers)
-│   │   ├── AdminHandler.java
-│   │   ├── BookingHandler.java
-│   │   ├── FlightHandler.java
-│   │   ├── RocketHandler.java
-│   │   └── models/            # Respuestas HTTP (ErrorResponse, mapper)
-│   ├── domain/                # Lógica de negocio y puertos
-│   │   ├── BookingService.java 
-│   │   ├── CancellationService.java
-│   │   ├── FlightService.java
-│   │   ├── RocketService.java
-│   │   ├── models/            # Entidades planas, comandos, errores
-│   │   └── ports/             # Puertos: repositorios, gateways, notificaciones
-│   └── infrastructure/        # Adaptadores de los puertos
-│       ├── InfrastructureFactory.java  # Composition root que resuelve puertos
-│       ├── *InMemoryRepository.java    # Adaptadores en memoria de repositorios
-│       └── *Console*.java              # Adaptadores en consola de gateways y servicios
+│   ├── AstroBookingsApp.java       # Entry point: crea servidor HTTP y registra handlers
+│   ├── Config.java                 # Composition root: instancia adaptadores y servicios
+│   ├── domain/                     # Núcleo de negocio + puertos
+│   │   ├── BookingsService.java    # Implementa BookingsUseCases
+│   │   ├── CancellationService.java# Implementa CancellationUseCases
+│   │   ├── FlightsService.java     # Implementa FlightsUseCases
+│   │   ├── RocketsService.java     # Implementa RocketsUseCases
+│   │   ├── models/                 # Entidades, comandos, errores
+│   │   │   ├── Booking.java
+│   │   │   ├── Flight.java
+│   │   │   ├── Rocket.java
+│   │   │   ├── FlightStatus.java
+│   │   │   ├── Create*Command.java # Comandos de creación
+│   │   │   ├── BusinessException.java
+│   │   │   └── BusinessErrorCode.java
+│   │   └── ports/
+│   │       ├── input/              # Puertos de entrada (use cases)
+│   │       │   ├── BookingsUseCases.java
+│   │       │   ├── CancellationUseCases.java
+│   │       │   ├── FlightsUseCases.java
+│   │       │   └── RocketsUseCases.java
+│   │       └── output/             # Puertos de salida (repositorios, gateways)
+│   │           ├── BookingRepository.java
+│   │           ├── FlightRepository.java
+│   │           ├── RocketRepository.java
+│   │           ├── PaymentGateway.java
+│   │           └── NotificationService.java
+│   └── infrastructure/
+│       ├── persistence/            # Adaptadores de salida
+│       │   ├── PersistenceAdapterFactory.java  # Factory de adaptadores de persistencia
+│       │   ├── BookingInMemoryRepository.java
+│       │   ├── FlightInMemoryRepository.java
+│       │   ├── RocketInMemoryRepository.java
+│       │   ├── PaymentConsoleGateway.java
+│       │   └── NotificationConsoleService.java
+│       └── presentation/           # Adaptadores de entrada (HTTP handlers)
+│           ├── UseCasesAdapterFactory.java  # Factory de servicios de dominio
+│           ├── AdminHandler.java
+│           ├── BookingsHandler.java
+│           ├── FlightsHandler.java
+│           ├── RocketsHandler.java
+│           ├── BaseHandler.java    # Clase base con utilidades HTTP/JSON
+│           └── models/
+│               ├── ErrorResponse.java
+│               └── ErrorResponseMapper.java
 ├── pom.xml
 ├── README.md
 └── ARCHITECTURE.md
@@ -73,57 +108,118 @@ AstroBookings es una aplicación de reservas de viajes espaciales implementada c
 
 A continuación se describe cómo encaja cada capa dentro del enfoque ports & adapters:
 
-- **presentation (adaptadores de entrada)**: HTTP handlers basados en `com.sun.net.httpserver`. Cada handler crea el servicio correspondiente, obtiene las dependencias desde `InfrastructureFactory` y transforma JSON ↔ DTOs (`ErrorResponse`, `ErrorResponseMapper`).
+- **Config (composition root)**: Clase central que ensambla la aplicación. Obtiene los adaptadores de salida desde `PersistenceAdapterFactory` y crea los servicios de dominio mediante `UseCasesAdapterFactory`, inyectando las dependencias. Los handlers reciben los use cases ya configurados.
+
+- **infrastructure/presentation (adaptadores de entrada)**: HTTP handlers basados en `com.sun.net.httpserver`. Cada handler recibe un puerto de entrada (use case) por constructor y transforma JSON ↔ DTOs. `UseCasesAdapterFactory` crea los servicios de dominio que implementan los use cases.
+
 - **domain (núcleo + puertos)**:
-  - **Servicios**: `RocketService`, `FlightService`, `BookingService`, `CancellationService`. Todo el negocio sucede aquí.
-  - **Modelos**: Entidades (`Rocket`, `Flight`, `Booking`), estados (`FlightStatus`), comandos (`CreateRocketCommand`, etc.), excepciones (`BusinessException`).
-  - **Puertos**: Interfaces como `RocketRepository`, `FlightRepository`, `BookingRepository`, `PaymentGateway`, `NotificationService`. Los servicios solo conocen estos puertos.
-- **infrastructure (adaptadores de salida)**:
+  - **Servicios**: `RocketsService`, `FlightsService`, `BookingsService`, `CancellationService`. Implementan los puertos de entrada (use cases) y contienen toda la lógica de negocio.
+  - **Modelos**: Entidades (`Rocket`, `Flight`, `Booking`), estados (`FlightStatus`), comandos (`CreateRocketCommand`, etc.), excepciones (`BusinessException`, `BusinessErrorCode`).
+  - **Puertos de entrada** (`ports/input`): Interfaces `RocketsUseCases`, `FlightsUseCases`, `BookingsUseCases`, `CancellationUseCases`. Definen las operaciones que el dominio expone.
+  - **Puertos de salida** (`ports/output`): Interfaces `RocketRepository`, `FlightRepository`, `BookingRepository`, `PaymentGateway`, `NotificationService`. Los servicios solo conocen estos puertos.
+
+- **infrastructure/persistence (adaptadores de salida)**:
   - **Repositorios en memoria**: `RocketInMemoryRepository`, `FlightInMemoryRepository`, `BookingInMemoryRepository` implementan los puertos de persistencia.
   - **Gateways simulados**: `PaymentConsoleGateway` y `NotificationConsoleService` cumplen los puertos externos.
-  - **Infraestructura común**: `InfrastructureFactory` actúa como composición e inyección manual, exponiendo instancias singleton de los adaptadores.
+  - **Factory de persistencia**: `PersistenceAdapterFactory` expone instancias singleton de todos los adaptadores de salida.
 
 ## Flujo de Datos y Dependencias
 
-El flujo de control va de los adaptadores de entrada hacia el dominio, y desde el dominio hacia los puertos de salida. Las dependencias se invierten: los servicios de dominio solo conocen interfaces (puertos), y `InfrastructureFactory` provee los adaptadores concretos.
+El flujo de control va de los adaptadores de entrada hacia el dominio, y desde el dominio hacia los puertos de salida. Las dependencias se invierten: los servicios de dominio solo conocen interfaces (puertos), y `Config` + factories proveen los adaptadores concretos.
+
+### Diagrama de Configuración e Inyección
+```
+AstroBookingsApp.main()
+  ↓
+Config (composition root)
+  ├─ PersistenceAdapterFactory → crea adaptadores de salida (singletons)
+  │   ├─ RocketInMemoryRepository
+  │   ├─ FlightInMemoryRepository
+  │   ├─ BookingInMemoryRepository
+  │   ├─ PaymentConsoleGateway
+  │   └─ NotificationConsoleService
+  └─ UseCasesAdapterFactory → crea servicios de dominio (inyecta puertos)
+      ├─ RocketsService(rocketRepository)
+      ├─ FlightsService(flightRepository, rocketRepository)
+      ├─ BookingsService(bookingRepo, flightRepo, rocketRepo, paymentGw, notificationSvc)
+      └─ CancellationService(flightRepo, bookingRepo, paymentGw, notificationSvc)
+  ↓
+HttpServer registra handlers con use cases inyectados
+  ├─ RocketsHandler(RocketsUseCases)
+  ├─ FlightsHandler(FlightsUseCases)
+  ├─ BookingsHandler(BookingsUseCases)
+  └─ AdminHandler(CancellationUseCases)
+```
 
 ### Crear Reserva (POST /bookings)
 ```
-Presentation (BookingHandler)
-  ↓ (crea BookingService y resuelve puertos via InfrastructureFactory)
-Domain Service (BookingService)
-  ├─ BookingRepository / FlightRepository / RocketRepository
-  ├─ PaymentGateway
-  └─ NotificationService
-       ↓ (puertos se satisfacen con adaptadores concretos)
-Infrastructure Adapters
-  ├─ BookingInMemoryRepository / FlightInMemoryRepository / RocketInMemoryRepository
-  ├─ PaymentConsoleGateway
-  └─ NotificationConsoleService
-       ↓
-Domain Models
-  ├─ Booking (con paymentTransactionId)
-  └─ Flight (transiciones SCHEDULED → CONFIRMED / SOLD_OUT)
+HTTP Request → BookingsHandler
+  ↓ (parseJSON → CreateBookingCommand)
+BookingsHandler.handlePost()
+  ↓ (llama al puerto de entrada)
+BookingsUseCases.createBooking(command)
+  ↓ (implementado por)
+BookingsService
+  ├─ flightRepository.findById() → FlightInMemoryRepository
+  ├─ rocketRepository.findById() → RocketInMemoryRepository
+  ├─ calculateDiscount() (lógica de negocio)
+  ├─ paymentGateway.processPayment() → PaymentConsoleGateway
+  ├─ bookingRepository.save() → BookingInMemoryRepository
+  ├─ flightRepository.save() (actualiza estado CONFIRMED/SOLD_OUT)
+  └─ notificationService.notify*() → NotificationConsoleService
+  ↓
+HTTP Response ← BookingsHandler.sendJsonResponse()
 ```
 
 ### Cancelar Vuelos (POST /admin/cancel-flights)
 ```
-Presentation (AdminHandler)
-  ↓ (crea CancellationService con puertos desde InfrastructureFactory)
-Domain Service (CancellationService)
-  ├─ FlightRepository / BookingRepository
-  ├─ PaymentGateway (reembolsos)
-  └─ NotificationService (avisos)
-       ↓ (puertos ←→ adaptadores)
-Infrastructure Adapters
-  ├─ FlightInMemoryRepository (actualiza estado a CANCELLED)
-  ├─ BookingInMemoryRepository (obtiene reservas a reembolsar)
-  ├─ PaymentConsoleGateway (simula reembolso)
-  └─ NotificationConsoleService (avisa a pasajeros)
-       ↓
-Domain Models
-  ├─ Flight (transición SCHEDULED → CANCELLED)
-  └─ Booking (marca paymentTransactionId reembolsado)
+HTTP Request → AdminHandler
+  ↓
+AdminHandler.handlePost()
+  ↓ (llama al puerto de entrada)
+CancellationUseCases.cancelFlights()
+  ↓ (implementado por)
+CancellationService
+  ├─ flightRepository.findScheduledBefore() → FlightInMemoryRepository
+  │   (busca vuelos SCHEDULED a menos de 1 semana sin mínimo de pasajeros)
+  ├─ Para cada vuelo a cancelar:
+  │   ├─ bookingRepository.findByFlightId() → BookingInMemoryRepository
+  │   ├─ paymentGateway.refund() → PaymentConsoleGateway
+  │   ├─ flightRepository.save() (estado → CANCELLED)
+  │   └─ notificationService.notifyCancellation() → NotificationConsoleService
+  ↓
+HTTP Response ← AdminHandler.sendJsonResponse({cancelledFlights: n})
+```
+
+### Crear Cohete (POST /rockets)
+```
+HTTP Request → RocketsHandler
+  ↓ (parseJSON → CreateRocketCommand)
+RocketsHandler.handlePost()
+  ↓
+RocketsUseCases.saveRocket(command)
+  ↓ (implementado por)
+RocketsService
+  ├─ validate(command) (nombre obligatorio, capacidad ≤ 10)
+  └─ rocketRepository.save() → RocketInMemoryRepository
+  ↓
+HTTP Response ← RocketsHandler.sendJsonResponse()
+```
+
+### Crear Vuelo (POST /flights)
+```
+HTTP Request → FlightsHandler
+  ↓ (parseJSON → CreateFlightCommand)
+FlightsHandler.handlePost()
+  ↓
+FlightsUseCases.createFlight(command)
+  ↓ (implementado por)
+FlightsService
+  ├─ validate() (fecha futura, precio > 0)
+  ├─ rocketRepository.findById() → RocketInMemoryRepository
+  └─ flightRepository.save() → FlightInMemoryRepository (estado SCHEDULED)
+  ↓
+HTTP Response ← FlightsHandler.sendJsonResponse()
 ```
 
 
