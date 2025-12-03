@@ -1,17 +1,15 @@
 package com.astrobookings.sales.infrastructure.adapters;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.astrobookings.fleet.domain.models.Flight;
 import com.astrobookings.fleet.domain.models.FlightStatus;
-import com.astrobookings.fleet.domain.models.Rocket;
 import com.astrobookings.fleet.domain.ports.output.FlightRepository;
-import com.astrobookings.fleet.domain.ports.output.RocketRepository;
 import com.astrobookings.sales.domain.ports.output.BookingRepository;
 import com.astrobookings.sales.domain.ports.output.FlightInfoProvider;
+import com.astrobookings.shared.domain.Capacity;
 
 /**
  * Adapter that connects Sales module to Fleet module.
@@ -21,15 +19,12 @@ import com.astrobookings.sales.domain.ports.output.FlightInfoProvider;
  */
 public class FleetAdapter implements FlightInfoProvider {
   private final FlightRepository flightRepository;
-  private final RocketRepository rocketRepository;
   private final BookingRepository bookingRepository;
 
   public FleetAdapter(
       FlightRepository flightRepository,
-      RocketRepository rocketRepository,
       BookingRepository bookingRepository) {
     this.flightRepository = flightRepository;
-    this.rocketRepository = rocketRepository;
     this.bookingRepository = bookingRepository;
   }
 
@@ -39,9 +34,6 @@ public class FleetAdapter implements FlightInfoProvider {
     if (flight == null) {
       return null;
     }
-    Rocket rocket = rocketRepository.findById(flight.getRocketId());
-    int capacity = rocket != null ? rocket.getCapacity() : 0;
-    
     return new FlightInfo(
         flight.getId(),
         flight.getRocketId(),
@@ -49,18 +41,16 @@ public class FleetAdapter implements FlightInfoProvider {
         flight.getBasePrice(),
         flight.getStatus().name(),
         flight.getMinPassengers(),
-        capacity
-    );
+        flight.capacity());
   }
 
   @Override
-  public int getRocketCapacityForFlight(String flightId) {
+  public Capacity getRocketCapacityForFlight(String flightId) {
     Flight flight = flightRepository.findById(flightId);
     if (flight == null) {
-      return 0;
+      return null;
     }
-    Rocket rocket = rocketRepository.findById(flight.getRocketId());
-    return rocket != null ? rocket.getCapacity() : 0;
+    return flight.capacity();
   }
 
   @Override
@@ -69,12 +59,25 @@ public class FleetAdapter implements FlightInfoProvider {
   }
 
   @Override
-  public void updateFlightStatus(String flightId, String status) {
+  public void markFlightSoldOut(String flightId) {
     Flight flight = flightRepository.findById(flightId);
     if (flight != null) {
-      flight.setStatus(FlightStatus.valueOf(status));
+      flight.markSoldOut();
       flightRepository.save(flight);
     }
+  }
+
+  @Override
+  public boolean confirmFlightIfMinReached(String flightId, int passengerCount) {
+    Flight flight = flightRepository.findById(flightId);
+    if (flight == null) {
+      return false;
+    }
+    boolean confirmed = flight.confirmIfMinReached(passengerCount);
+    if (confirmed) {
+      flightRepository.save(flight);
+    }
+    return confirmed;
   }
 
   @Override
@@ -83,41 +86,39 @@ public class FleetAdapter implements FlightInfoProvider {
     if (flight == null) {
       return false;
     }
-    if (flight.getStatus() == FlightStatus.CANCELLED || flight.getStatus() == FlightStatus.SOLD_OUT) {
-      return false;
-    }
-    Rocket rocket = rocketRepository.findById(flight.getRocketId());
-    if (rocket == null) {
-      return false;
-    }
     int currentBookings = getCurrentPassengerCount(flightId);
-    return currentBookings < rocket.getCapacity();
+    return flight.canAcceptNewPassenger(currentBookings);
   }
 
   @Override
   public List<FlightInfo> getFlightsForCancellation(LocalDateTime cutoffDate, int minPassengers) {
     List<Flight> allFlights = flightRepository.findAll();
-    LocalDateTime now = LocalDateTime.now();
-    
+
     return allFlights.stream()
         .filter(flight -> flight.getStatus() == FlightStatus.SCHEDULED)
-        .filter(flight -> {
-          long daysUntilDeparture = ChronoUnit.DAYS.between(now, flight.getDepartureDate());
-          return daysUntilDeparture <= 7;
-        })
-        .map(flight -> {
-          Rocket rocket = rocketRepository.findById(flight.getRocketId());
-          int capacity = rocket != null ? rocket.getCapacity() : 0;
-          return new FlightInfo(
-              flight.getId(),
-              flight.getRocketId(),
-              flight.getDepartureDate(),
-              flight.getBasePrice(),
-              flight.getStatus().name(),
-              flight.getMinPassengers(),
-              capacity
-          );
-        })
+        .filter(flight -> !flight.getDepartureDate().isAfter(cutoffDate))
+        .filter(flight -> flight.getMinPassengers() >= minPassengers)
+        .map(flight -> new FlightInfo(
+            flight.getId(),
+            flight.getRocketId(),
+            flight.getDepartureDate(),
+            flight.getBasePrice(),
+            flight.getStatus().name(),
+            flight.getMinPassengers(),
+            flight.capacity()))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean cancelFlightIfLowDemand(String flightId, int currentPassengers, LocalDateTime cutoffDate) {
+    Flight flight = flightRepository.findById(flightId);
+    if (flight == null) {
+      return false;
+    }
+    boolean cancelled = flight.cancelDueToLowDemand(currentPassengers, cutoffDate);
+    if (cancelled) {
+      flightRepository.save(flight);
+    }
+    return cancelled;
   }
 }

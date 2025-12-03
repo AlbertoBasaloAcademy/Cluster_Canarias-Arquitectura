@@ -31,27 +31,25 @@ public class CancellationService implements CancellationUseCases {
   public int cancelFlights() {
     LocalDateTime cutoffDate = LocalDateTime.now().plusDays(7);
     List<FlightInfo> flightsToCancel = flightInfoProvider.getFlightsForCancellation(cutoffDate, 5);
-    
+
     int cancelledCount = 0;
     for (FlightInfo flight : flightsToCancel) {
       List<Booking> bookings = bookingRepository.findByFlightId(flight.id());
-      
-      if (bookings.size() < flight.minPassengers()) {
-        // Cancel flight
-        System.out.println("[CANCELLATION SERVICE] Cancelling flight " + flight.id() + " - Only "
-            + bookings.size() + "/" + flight.minPassengers() + " passengers");
-        
-        flightInfoProvider.updateFlightStatus(flight.id(), "CANCELLED");
 
-        // Refund bookings
-        for (Booking booking : bookings) {
-          paymentGateway.processRefund(booking.getPaymentTransactionId(), booking.getFinalPrice());
-        }
-
-        // Notify
-        notificationService.notifyCancellation(flight.id(), bookings);
-        cancelledCount++;
+      boolean cancelled = flightInfoProvider.cancelFlightIfLowDemand(flight.id(), bookings.size(), cutoffDate);
+      if (!cancelled) {
+        continue;
       }
+
+      System.out.println("[CANCELLATION SERVICE] Cancelling flight " + flight.id() + " - Only "
+          + bookings.size() + "/" + flight.minPassengers() + " passengers");
+
+      for (Booking booking : bookings) {
+        paymentGateway.processRefund(booking.getPaymentTransactionId(), booking.getFinalPrice());
+      }
+
+      notificationService.notifyCancellation(flight.id(), bookings);
+      cancelledCount++;
     }
     return cancelledCount;
   }

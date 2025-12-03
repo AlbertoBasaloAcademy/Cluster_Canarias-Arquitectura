@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.astrobookings.fleet.domain.models.Flight;
 import com.astrobookings.fleet.domain.models.FlightStatus;
 import com.astrobookings.fleet.domain.ports.output.FlightRepository;
+import com.astrobookings.shared.domain.Capacity;
 
 public class FlightInMemoryRepository implements FlightRepository {
   private static final Map<String, Flight> flights = new HashMap<>();
@@ -19,13 +20,13 @@ public class FlightInMemoryRepository implements FlightRepository {
     var rocketId = "r1";
     // Pre-load flights
     var flight1Id = "f1";
-    Flight flight1 = new Flight(flight1Id, rocketId, LocalDateTime.of(2026, 6, 1, 10, 0),
-        1000.0, FlightStatus.SCHEDULED, 5);
+    Flight flight1 = Flight.restore(flight1Id, rocketId, LocalDateTime.of(2026, 6, 1, 10, 0),
+        1000.0, FlightStatus.SCHEDULED, 5, Capacity.from(7));
     flights.put(flight1Id, flight1);
 
     var flight2Id = "f2";
-    Flight flight2 = new Flight(flight2Id, rocketId, LocalDateTime.of(2026, 12, 1, 10, 0),
-        2000.0, FlightStatus.CANCELLED, 5);
+    Flight flight2 = Flight.restore(flight2Id, rocketId, LocalDateTime.of(2026, 12, 1, 10, 0),
+        2000.0, FlightStatus.CANCELLED, 5, Capacity.from(7));
     flights.put(flight2Id, flight2);
 
     nextId = 3;
@@ -56,7 +57,7 @@ public class FlightInMemoryRepository implements FlightRepository {
 
   public Flight save(Flight flight) {
     if (flight.getId() == null) {
-      flight.setId("f" + nextId++);
+      flight.assignId("f" + nextId++);
     }
     flights.put(flight.getId(), flight);
     return flight;

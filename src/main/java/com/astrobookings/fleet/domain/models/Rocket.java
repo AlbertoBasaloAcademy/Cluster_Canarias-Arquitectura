@@ -1,26 +1,33 @@
 package com.astrobookings.fleet.domain.models;
 
+import com.astrobookings.shared.domain.Capacity;
+
 public class Rocket {
   private String id;
-  private String name;
-  private int capacity;
-  private Double speed;
+  private final String name;
+  private final Capacity capacity;
+  private final Double speed;
 
-  public Rocket() {
-  }
-
-  public Rocket(String id, String name, int capacity, Double speed) {
+  private Rocket(String id, String name, Capacity capacity, Double speed) {
     this.id = id;
     this.name = name;
     this.capacity = capacity;
     this.speed = speed;
   }
 
+  public static Rocket register(String name, Capacity capacity, Double speed) {
+    return new Rocket(null, name, capacity, speed);
+  }
+
+  public static Rocket restore(String id, String name, Capacity capacity, Double speed) {
+    return new Rocket(id, name, capacity, speed);
+  }
+
   public String getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void assignId(String id) {
     this.id = id;
   }
 
@@ -28,23 +35,15 @@ public class Rocket {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public int getCapacity() {
-    return capacity;
+    return capacity.maxPassengers();
   }
 
-  public void setCapacity(int capacity) {
-    this.capacity = capacity;
+  public Capacity capacity() {
+    return capacity;
   }
 
   public Double getSpeed() {
     return speed;
-  }
-
-  public void setSpeed(Double speed) {
-    this.speed = speed;
   }
 }

@@ -1,16 +1,14 @@
 package com.astrobookings.fleet.domain;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import com.astrobookings.shared.domain.BusinessErrorCode;
-import com.astrobookings.shared.domain.BusinessException;
 import com.astrobookings.fleet.domain.models.CreateFlightCommand;
 import com.astrobookings.fleet.domain.models.Flight;
-import com.astrobookings.fleet.domain.models.FlightStatus;
 import com.astrobookings.fleet.domain.models.Rocket;
 import com.astrobookings.fleet.domain.ports.output.FlightRepository;
 import com.astrobookings.fleet.domain.ports.output.RocketRepository;
+import com.astrobookings.shared.domain.BusinessErrorCode;
+import com.astrobookings.shared.domain.BusinessException;
 
 public class FlightsService implements com.astrobookings.fleet.domain.ports.input.FlightsUseCases {
   private final FlightRepository flightRepository;
@@ -31,40 +29,24 @@ public class FlightsService implements com.astrobookings.fleet.domain.ports.inpu
   }
 
   public Flight createFlight(CreateFlightCommand command) {
-    Flight flight = new Flight();
-    flight.setRocketId(command.rocketId());
-    flight.setDepartureDate(command.departureDate());
-    flight.setBasePrice(command.basePrice());
-    flight.setStatus(FlightStatus.SCHEDULED);
-    flight.setMinPassengers(Math.max(command.minPassengers(), DEFAULT_MIN_PASSENGERS));
-
-    validateFlight(flight);
-
-    return flightRepository.save(flight);
-  }
-
-  private void validateFlight(Flight flight) {
-    if (flight.getBasePrice() <= 0) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Base price must be positive");
-    }
-    if (flight.getMinPassengers() <= 0 || flight.getMinPassengers() > 10) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Min passengers must be between 1 and 10");
-    }
-
-    Rocket rocket = rocketRepository.findById(flight.getRocketId());
+    Rocket rocket = rocketRepository.findById(command.rocketId());
     if (rocket == null) {
       throw new BusinessException(BusinessErrorCode.NOT_FOUND,
-          "Rocket with id " + flight.getRocketId() + " does not exist");
+          "Rocket with id " + command.rocketId() + " does not exist");
     }
 
-    LocalDateTime now = LocalDateTime.now();
-    if (!flight.getDepartureDate().isAfter(now)) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date must be in the future");
-    }
+    int requestedMin = command.minPassengers() == null || command.minPassengers() <= 0
+        ? DEFAULT_MIN_PASSENGERS
+        : command.minPassengers();
+    int effectiveMin = Math.min(requestedMin, rocket.capacity().maxPassengers());
 
-    LocalDateTime oneYearAhead = now.plusYears(1);
-    if (flight.getDepartureDate().isAfter(oneYearAhead)) {
-      throw new BusinessException(BusinessErrorCode.VALIDATION, "Departure date cannot be more than 1 year ahead");
-    }
+    Flight flight = Flight.schedule(
+        command.rocketId(),
+        command.departureDate(),
+        command.basePrice(),
+        rocket.capacity(),
+        effectiveMin);
+
+    return flightRepository.save(flight);
   }
 }

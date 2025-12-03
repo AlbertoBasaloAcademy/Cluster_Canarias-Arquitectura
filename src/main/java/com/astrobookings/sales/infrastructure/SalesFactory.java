@@ -47,24 +47,20 @@ public class SalesFactory {
     // Create adapter to Fleet module
     this.flightInfoProvider = new FleetAdapter(
         fleetFactory.getFlightRepository(),
-        fleetFactory.getRocketRepository(),
-        bookingRepository
-    );
+        bookingRepository);
 
     // Create domain services
     this.bookingsUseCases = new BookingsService(
         bookingRepository,
         flightInfoProvider,
         paymentGateway,
-        notificationService
-    );
+        notificationService);
 
     this.cancellationUseCases = new CancellationService(
         flightInfoProvider,
         bookingRepository,
         paymentGateway,
-        notificationService
-    );
+        notificationService);
 
     // Create presentation adapters
     this.bookingsHandler = new BookingsHandler(bookingsUseCases);

@@ -273,8 +273,10 @@ La relación entre módulos sigue el patrón **Customer-Supplier**:
 │  Operaciones:                            │
 │  - getFlightById(id)                     │
 │  - getRocketCapacity(flightId)           │
-│  - updateFlightStatus(id, status)        │
 │  - canAcceptPassengers(id)               │
+│  - confirmFlightIfMinReached(id, count)  │
+│  - markFlightSoldOut(id)                 │
+│  - cancelFlightIfLowDemand(...)          │
 │  - getFlightsForCancellation(...)        │
 └──────────────┬───────────────────────────┘
                │
@@ -297,9 +299,11 @@ Este puerto define el contrato en términos del dominio Sales:
 ```java
 public interface FlightInfoProvider {
   FlightInfo getFlightById(String flightId);
-  int getRocketCapacityForFlight(String flightId);
-  void updateFlightStatus(String flightId, String status);
+  Capacity getRocketCapacityForFlight(String flightId);
   boolean canAcceptPassengers(String flightId);
+  boolean confirmFlightIfMinReached(String flightId, int passengerCount);
+  void markFlightSoldOut(String flightId);
+  boolean cancelFlightIfLowDemand(String flightId, int currentPassengers, LocalDateTime cutoffDate);
   List<FlightInfo> getFlightsForCancellation(LocalDateTime cutoffDate, int minPassengers);
   
   record FlightInfo(
@@ -309,7 +313,7 @@ public interface FlightInfoProvider {
       double basePrice,
       String status,
       int minPassengers,
-      int capacity
+      Capacity capacity
   ) {}
 }
 ```
@@ -353,7 +357,7 @@ AstroBookingsApp.main()
   │           ├─ BookingInMemoryRepository
   │           ├─ PaymentConsoleGateway
   │           ├─ NotificationConsoleService
-  │           ├─ FleetAdapter(fleetRepos, bookingRepo)  ← Conecta con Fleet
+  │           ├─ FleetAdapter(flightRepo, bookingRepo)  ← Conecta con Fleet
   │           ├─ BookingsService(bookingRepo, flightInfoProvider, payment, notification)
   │           ├─ CancellationService(flightInfoProvider, bookingRepo, payment, notification)
   │           ├─ BookingsHandler(bookingsUseCases)
@@ -378,20 +382,18 @@ BookingsService.createBooking(command)
   ├─► flightInfoProvider.getFlightById(flightId)
   │     ↓
   │   FleetAdapter
-  │     ├─► flightRepository.findById(id)    [Fleet]
-  │     ├─► rocketRepository.findById(rId)   [Fleet]
-  │     └─► return new FlightInfo(...)
+  │     └─► flightRepository.findById(id)    [Fleet] → Flight aggregate + Capacity snapshot
   │
   ├─► calculateDiscount(flightInfo, currentBookings)
   ├─► paymentGateway.processPayment(finalPrice)
   ├─► bookingRepository.save(booking)         [Sales]
   │
-  └─► flightInfoProvider.updateFlightStatus(id, status)
+  ├─► flightInfoProvider.confirmFlightIfMinReached(id, passengerCount)
+  │     ↓
+  │   FleetAdapter → flight.confirmIfMinReached(...) + save
+  └─► flightInfoProvider.markFlightSoldOut(id) (cuando aplica)
         ↓
-      FleetAdapter
-        ├─► flightRepository.findById(id)
-        ├─► flight.setStatus(CONFIRMED/SOLD_OUT)
-        └─► flightRepository.save(flight)
+      FleetAdapter → flight.markSoldOut() + save
   ↓
 HTTP Response (201 Created)
 ```
@@ -412,7 +414,7 @@ CancellationService.cancelFlights()
   │
   ├─► Para cada vuelo:
   │     ├─► bookingRepository.findByFlightId(id)     [Sales]
-  │     ├─► flightInfoProvider.updateFlightStatus(id, CANCELLED)
+  │     ├─► flightInfoProvider.cancelFlightIfLowDemand(id, passengers, cutoff)
   │     ├─► paymentGateway.processRefund(txId)
   │     └─► notificationService.notifyCancellation(...)
   │
@@ -452,6 +454,13 @@ Acciones:
 1. Cambiar estado a `CANCELLED` (via FlightInfoProvider)
 2. Procesar devolución total a todos los pasajeros
 3. Enviar notificación de cancelación
+
+## Modelo Táctico Rich
+
+- **Capacity (VO compartido)**: encapsula el rango permitido (1..10) y centraliza las validaciones de aforo. Lo usan `Rocket`, `Flight` y `BookingsService` para evitar números mágicos.
+- **Flight como agregado**: se crea a través de `Flight.schedule(...)` y protege sus invariantes (`confirmIfMinReached`, `markSoldOut`, `cancelDueToLowDemand`, `canAcceptNewPassenger`). Ningún servicio cambia `FlightStatus` directamente.
+- **Booking como agregado rico**: `Booking.create(...)` valida pasajero, precio y transacción antes de persistir, eliminando setters públicos.
+- **Servicios de dominio delgados**: `BookingsService` y `CancellationService` solo orquestan pagos, repositorios y notificaciones. Toda transición de vuelo pasa por `FlightInfoProvider`, que delega en el agregado de Fleet.
 
 ## Workflow de Desarrollo y Ejecución
 

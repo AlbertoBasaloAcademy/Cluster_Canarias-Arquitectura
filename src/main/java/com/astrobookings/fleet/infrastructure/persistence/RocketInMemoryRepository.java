@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.astrobookings.fleet.domain.models.Rocket;
 import com.astrobookings.fleet.domain.ports.output.RocketRepository;
+import com.astrobookings.shared.domain.Capacity;
 
 public class RocketInMemoryRepository implements RocketRepository {
   private static final Map<String, Rocket> rockets = new HashMap<>();
@@ -15,7 +16,7 @@ public class RocketInMemoryRepository implements RocketRepository {
   static {
     // Pre-load one rocket
     var rocketId = "r1";
-    Rocket falcon9 = new Rocket(rocketId, "Falcon 9", 7, 27000.0);
+    Rocket falcon9 = Rocket.restore(rocketId, "Falcon 9", Capacity.from(7), 27000.0);
     rockets.put(rocketId, falcon9);
     nextId = 2;
   }
@@ -30,7 +31,7 @@ public class RocketInMemoryRepository implements RocketRepository {
 
   public Rocket save(Rocket rocket) {
     if (rocket.getId() == null) {
-      rocket.setId("r" + nextId++);
+      rocket.assignId("r" + nextId++);
     }
     rockets.put(rocket.getId(), rocket);
     return rocket;

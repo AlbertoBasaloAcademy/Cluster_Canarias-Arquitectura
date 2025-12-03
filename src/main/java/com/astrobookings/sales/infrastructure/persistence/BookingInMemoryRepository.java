@@ -31,7 +31,7 @@ public class BookingInMemoryRepository implements BookingRepository {
 
   public Booking save(Booking booking) {
     if (booking.getId() == null) {
-      booking.setId("b" + nextId++);
+      booking.assignId("b" + nextId++);
     }
     bookings.put(booking.getId(), booking);
     return booking;

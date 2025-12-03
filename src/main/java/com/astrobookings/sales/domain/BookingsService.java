@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import com.astrobookings.shared.domain.BusinessErrorCode;
-import com.astrobookings.shared.domain.BusinessException;
 import com.astrobookings.sales.domain.models.Booking;
 import com.astrobookings.sales.domain.models.CreateBookingCommand;
 import com.astrobookings.sales.domain.ports.input.BookingsUseCases;
@@ -14,6 +12,9 @@ import com.astrobookings.sales.domain.ports.output.FlightInfoProvider;
 import com.astrobookings.sales.domain.ports.output.FlightInfoProvider.FlightInfo;
 import com.astrobookings.sales.domain.ports.output.NotificationService;
 import com.astrobookings.sales.domain.ports.output.PaymentGateway;
+import com.astrobookings.shared.domain.BusinessErrorCode;
+import com.astrobookings.shared.domain.BusinessException;
+import com.astrobookings.shared.domain.Capacity;
 
 public class BookingsService implements BookingsUseCases {
   private final BookingRepository bookingRepository;
@@ -46,12 +47,12 @@ public class BookingsService implements BookingsUseCases {
     }
 
     List<Booking> existingBookings = bookingRepository.findByFlightId(command.flightId());
-    int capacity = flight.capacity();
     int currentBookings = existingBookings.size();
-
-    if (currentBookings >= capacity) {
-      throw new BusinessException(BusinessErrorCode.CAPACITY, "Flight is sold out");
+    Capacity capacity = flight.capacity();
+    if (capacity == null) {
+      throw new BusinessException(BusinessErrorCode.INTERNAL, "Flight capacity unavailable");
     }
+    capacity.ensureCanBoard(currentBookings);
 
     double discount = calculateDiscount(flight, currentBookings, capacity);
     double finalPrice = flight.basePrice() * (1 - discount);
@@ -63,30 +64,26 @@ public class BookingsService implements BookingsUseCases {
       throw new BusinessException(BusinessErrorCode.PAYMENT, e.getMessage());
     }
 
-    Booking booking = new Booking();
-    booking.setFlightId(command.flightId());
-    booking.setPassengerName(command.passengerName());
-    booking.setFinalPrice(finalPrice);
-    booking.setPaymentTransactionId(transactionId);
+    Booking booking = Booking.create(command.flightId(), command.passengerName(), finalPrice, transactionId);
     Booking savedBooking = bookingRepository.save(booking);
 
-    currentBookings++;
-    if (currentBookings >= capacity) {
-      flightInfoProvider.updateFlightStatus(command.flightId(), "SOLD_OUT");
-    } else if (currentBookings >= flight.minPassengers() && "SCHEDULED".equals(flight.status())) {
-      flightInfoProvider.updateFlightStatus(command.flightId(), "CONFIRMED");
-      notificationService.notifyConfirmation(command.flightId(), currentBookings);
+    int passengerCountAfterBooking = currentBookings + 1;
+    if (capacity.isFull(passengerCountAfterBooking)) {
+      flightInfoProvider.markFlightSoldOut(command.flightId());
+    } else if (flightInfoProvider.confirmFlightIfMinReached(command.flightId(), passengerCountAfterBooking)) {
+      notificationService.notifyConfirmation(command.flightId(), passengerCountAfterBooking);
     }
 
     return savedBooking;
   }
 
-  private double calculateDiscount(FlightInfo flight, int currentBookings, int capacity) {
+  private double calculateDiscount(FlightInfo flight, int currentBookings, Capacity capacity) {
     LocalDateTime now = LocalDateTime.now();
     long daysUntilDeparture = ChronoUnit.DAYS.between(now, flight.departureDate());
+    int capacityLimit = capacity.maxPassengers();
 
     // Precedence: only one discount
-    if (currentBookings + 1 == capacity) {
+    if (currentBookings + 1 == capacityLimit) {
       return 0.0; // Last seat, no discount
     } else if (currentBookings + 1 == flight.minPassengers()) {
       return 0.3; // One short of min, 30% off
