@@ -8,10 +8,10 @@ import com.astrobookings.domain.ports.input.BookingsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
-public class BookingHandler extends BaseHandler {
+public class BookingsHandler extends BaseHandler {
   private final BookingsUseCases bookingsUseCases;
 
-  public BookingHandler(BookingsUseCases bookingsUseCases) {
+  public BookingsHandler(BookingsUseCases bookingsUseCases) {
     this.bookingsUseCases = bookingsUseCases;
   }
 

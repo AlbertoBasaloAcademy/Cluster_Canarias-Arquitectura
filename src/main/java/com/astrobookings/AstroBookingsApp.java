@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import com.astrobookings.infrastructure.presentation.AdminHandler;
-import com.astrobookings.infrastructure.presentation.BookingHandler;
-import com.astrobookings.infrastructure.presentation.FlightHandler;
-import com.astrobookings.infrastructure.presentation.RocketHandler;
+import com.astrobookings.infrastructure.presentation.BookingsHandler;
+import com.astrobookings.infrastructure.presentation.FlightsHandler;
+import com.astrobookings.infrastructure.presentation.RocketsHandler;
 import com.sun.net.httpserver.HttpServer;
 
 public class AstroBookingsApp {
@@ -15,9 +15,9 @@ public class AstroBookingsApp {
     HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
     // Register handlers for endpoints
-    server.createContext("/rockets", new RocketHandler(Config.rocketUseCase));
-    server.createContext("/flights", new FlightHandler(Config.flightUseCase));
-    server.createContext("/bookings", new BookingHandler(Config.bookingUseCase));
+    server.createContext("/rockets", new RocketsHandler(Config.rocketUseCase));
+    server.createContext("/flights", new FlightsHandler(Config.flightUseCase));
+    server.createContext("/bookings", new BookingsHandler(Config.bookingUseCase));
     server.createContext("/admin/cancel-flights", new AdminHandler(Config.cancellationUseCases));
 
     // Start server

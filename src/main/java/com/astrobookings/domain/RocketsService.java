@@ -9,10 +9,10 @@ import com.astrobookings.domain.models.Rocket;
 import com.astrobookings.domain.ports.input.RocketsUseCases;
 import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class RocketService implements RocketsUseCases {
+public class RocketsService implements RocketsUseCases {
   private final RocketRepository rocketRepository;
 
-  public RocketService(RocketRepository rocketRepository) {
+  public RocketsService(RocketRepository rocketRepository) {
     this.rocketRepository = rocketRepository;
   }
 

@@ -9,10 +9,10 @@ import com.astrobookings.domain.ports.input.FlightsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
-public class FlightHandler extends BaseHandler {
+public class FlightsHandler extends BaseHandler {
   private final FlightsUseCases flightUseCases;
 
-  public FlightHandler(FlightsUseCases flightUseCases) {
+  public FlightsHandler(FlightsUseCases flightUseCases) {
     this.flightUseCases = flightUseCases;
   }
 

@@ -2,8 +2,8 @@ package com.astrobookings.infrastructure.presentation;
 
 import com.astrobookings.domain.BookingsService;
 import com.astrobookings.domain.CancellationService;
-import com.astrobookings.domain.FlightService;
-import com.astrobookings.domain.RocketService;
+import com.astrobookings.domain.FlightsService;
+import com.astrobookings.domain.RocketsService;
 import com.astrobookings.domain.ports.input.BookingsUseCases;
 import com.astrobookings.domain.ports.input.FlightsUseCases;
 import com.astrobookings.domain.ports.input.RocketsUseCases;
@@ -16,12 +16,12 @@ import com.astrobookings.domain.ports.output.RocketRepository;
 public class UseCasesAdapterFactory {
 
   public static RocketsUseCases getRocketsUseCase(RocketRepository rocketRepository) {
-    return new RocketService(rocketRepository);
+    return new RocketsService(rocketRepository);
   }
 
   public static FlightsUseCases getFlightsUseCase(FlightRepository flightRepository,
       RocketRepository rocketRepository) {
-    return new FlightService(flightRepository, rocketRepository);
+    return new FlightsService(flightRepository, rocketRepository);
   }
 
   public static BookingsUseCases getBookingsUseCase(BookingRepository bookingRepository,

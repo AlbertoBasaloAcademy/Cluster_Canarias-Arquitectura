@@ -12,12 +12,12 @@ import com.astrobookings.domain.models.Rocket;
 import com.astrobookings.domain.ports.output.FlightRepository;
 import com.astrobookings.domain.ports.output.RocketRepository;
 
-public class FlightService implements com.astrobookings.domain.ports.input.FlightsUseCases {
+public class FlightsService implements com.astrobookings.domain.ports.input.FlightsUseCases {
   private final FlightRepository flightRepository;
   private final RocketRepository rocketRepository;
   private static final int DEFAULT_MIN_PASSENGERS = 5;
 
-  public FlightService(FlightRepository flightRepository, RocketRepository rocketRepository) {
+  public FlightsService(FlightRepository flightRepository, RocketRepository rocketRepository) {
     this.flightRepository = flightRepository;
     this.rocketRepository = rocketRepository;
   }

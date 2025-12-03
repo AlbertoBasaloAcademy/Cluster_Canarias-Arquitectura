@@ -7,11 +7,11 @@ import com.astrobookings.domain.ports.input.RocketsUseCases;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
-public class RocketHandler extends BaseHandler {
+public class RocketsHandler extends BaseHandler {
   private final RocketsUseCases rocketsUseCases;
   private HttpExchange exchange;
 
-  public RocketHandler(RocketsUseCases rocketsUseCases) {
+  public RocketsHandler(RocketsUseCases rocketsUseCases) {
     this.rocketsUseCases = rocketsUseCases;
   }
 
