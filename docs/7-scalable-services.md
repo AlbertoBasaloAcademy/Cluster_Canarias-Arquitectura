@@ -35,7 +35,7 @@ Construcción de servicios escalables y resilientes.
     - Complejidad/bloqueo
   - Técnicos:
     - Demanda hardware específica
-    - Disponibilidad crítica .
+    - Disponibilidad crítica.
 
 ---
 
